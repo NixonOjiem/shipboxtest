@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Log;
 
 class AuthenticationController extends Controller
 {
@@ -35,6 +36,8 @@ class AuthenticationController extends Controller
 
     public function signup(Request $request)
     {
+        Log::info('Receiving request:', $request->all());
+
         // Validate incoming request
         $data = $request->validate([
             'name' => 'required|string|max:255',
@@ -42,13 +45,16 @@ class AuthenticationController extends Controller
             'password' => 'required|string|min:8|confirmed',
             // include password_confirmation field in request
         ]);
-
+        Log::info('validated request:', $data);
         // Create the user
         $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => $data['password'],
         ]);
+
+        Log::info('User created', $user->toArray());
+
 
         // Return response
         return response()->json([
