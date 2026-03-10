@@ -16,10 +16,9 @@ class UserContoller extends Controller
         ]);
     }
 
-    //assign a user a role
     public function assignRole(Request $request, User $user)
     {
-        $this->authorize('update users');
+        // Authorization is now handled by the 'can' middleware in api.php
         $data = $this->validateRole($request);
 
         $user->assignRole($data['role_name']);
@@ -30,10 +29,9 @@ class UserContoller extends Controller
         ], 201);
     }
 
-    //remove a role from user
     public function removeRole(Request $request, User $user)
     {
-        $this->authorize('update users');
+        // Authorization is now handled by the 'can' middleware in api.php
         $data = $this->validateRole($request);
 
         $user->removeRole($data['role_name']);

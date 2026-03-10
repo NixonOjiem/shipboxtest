@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthenticationController;
+use App\Http\Controllers\User\UserContoller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -16,3 +17,11 @@ Route::get('/testserver', function () {
 // Authentication routes
 Route::post('/login', [AuthenticationController::class, 'login']);
 Route::post('/signup', [AuthenticationController::class, 'signup']);
+
+// Route to assign and revoke roles
+Route::middleware(['auth:sanctum', 'can:update users'])->group(function () {
+    Route::post('/users/{user}/assign-role', [UserContoller::class, 'assignRole']);
+    Route::post('/users/{user}/remove-role', [UserContoller::class, 'removeRole']);
+});
+
+

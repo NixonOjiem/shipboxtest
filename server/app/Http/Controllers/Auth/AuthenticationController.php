@@ -26,7 +26,7 @@ class AuthenticationController extends Controller
         }
 
         $token = $user->createToken('auth_token')->plainTextToken;
-
+        Log::info('user logged in', $user->toArray());
         return response()->json([
             'access_token' => $token,
             'token_type' => 'Bearer',
@@ -36,7 +36,7 @@ class AuthenticationController extends Controller
 
     public function signup(Request $request)
     {
-        Log::info('Receiving request:', $request->all());
+        // Log::info('Receiving request:', $request->all());
 
         // Validate incoming request
         $data = $request->validate([
@@ -45,7 +45,7 @@ class AuthenticationController extends Controller
             'password' => 'required|string|min:8|confirmed',
             // include password_confirmation field in request
         ]);
-        Log::info('validated request:', $data);
+        // Log::info('validated request:', $data);
         // Create the user
         $user = User::create([
             'name' => $data['name'],
@@ -54,7 +54,6 @@ class AuthenticationController extends Controller
         ]);
 
         Log::info('User created', $user->toArray());
-
 
         // Return response
         return response()->json([
