@@ -17,7 +17,7 @@ class RoleController extends Controller
 
     public function givePermission(Request $request, Role $role)
     {
-        $this->authorize('update roles');
+        // Authorization handled by 'can:update roles' middleware in api.php
         $data = $this->validatedPermission($request);
 
         $role->givePermissionTo($data['permission_name']);
@@ -30,7 +30,7 @@ class RoleController extends Controller
 
     public function revokePermission(Request $request, Role $role)
     {
-        $this->authorize('update roles');
+        // Authorization handled by 'can:update roles' middleware in api.php
         $data = $this->validatedPermission($request);
 
         $role->revokePermissionTo($data['permission_name']);

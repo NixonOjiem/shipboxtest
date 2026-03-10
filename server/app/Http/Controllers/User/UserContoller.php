@@ -5,6 +5,7 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
+use Log;
 
 class UserContoller extends Controller
 {
@@ -18,6 +19,7 @@ class UserContoller extends Controller
 
     public function assignRole(Request $request, User $user)
     {
+        Log::info("the request recieved is:", $request->all());
         // Authorization is now handled by the 'can' middleware in api.php
         $data = $this->validateRole($request);
 
