@@ -41,4 +41,6 @@ Route::middleware(['auth:sanctum', 'can:update users'])->group(function () {
 });
 
 
+// Products routes
+
 
