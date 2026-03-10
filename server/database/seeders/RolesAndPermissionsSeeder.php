@@ -41,10 +41,11 @@ class RolesAndPermissionsSeeder extends Seeder
             // no deleting orders or managing users for seller
         ]);
 
-        // (Optional) Create a test Admin user
-        $adminUser = User::factory()->create([
+        //test user who is admin
+        $adminUser = User::create([
             'name' => 'Super Admin',
-            'email' => 'admin@example.com',
+            'email' => 'admin@app.com',
+            'password' => 'secretAdmin123',
         ]);
         $adminUser->assignRole('Admin');
     }
