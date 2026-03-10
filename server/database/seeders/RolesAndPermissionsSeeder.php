@@ -39,6 +39,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'read orders',
             'update orders'
             // no deleting orders or managing users for seller
+            // no uploading products yet from sellers, have request admin for that.
         ]);
 
         //test user who is admin
@@ -47,6 +48,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'email' => 'admin@app.com',
             'password' => 'secretAdmin123',
         ]);
+
         $adminUser->assignRole('Admin');
     }
 }

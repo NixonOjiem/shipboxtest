@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthenticationController;
+use App\Http\Controllers\Product\ProductController;
 use App\Http\Controllers\Role\RoleController;
 use App\Http\Controllers\User\UserContoller;
 use Illuminate\Http\Request;
@@ -42,5 +43,11 @@ Route::middleware(['auth:sanctum', 'can:update users'])->group(function () {
 
 
 // Products routes
-
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::post('/product-post', [ProductController::class, 'store'])->middleware('can:create products');
+    Route::post('/products/{product}/delete', [ProductController::class, 'destroy'])->middleware('can:delete products');
+    Route::patch('/products/{product}/modify-price', [ProductController::class, 'modifyPrice'])->middleware('can:update products');
+    Route::patch('/ptoducts/{product}/modify-name', [ProductController::class, 'modifyName'])->middleware('can:update products');
+    Route::delete('/product/{product}/delete', [ProductController::class, 'destroy'])->middleware('can:delete products');
+});
 
