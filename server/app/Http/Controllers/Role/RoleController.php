@@ -8,14 +8,19 @@ use Spatie\Permission\Models\Role;
 
 class RoleController extends Controller
 {
+    private function validatedPermission(Request $request)
+    {
+        return $request->validate([
+            'permission_name' => 'required|string|exists:permissions,name',
+        ]);
+    }
+
     public function givePermission(Request $request, Role $role)
     {
         $this->authorize('update roles');
-        $request->validate([
-            'permission_name' => 'required|string|exists:permissions,name',
-        ]);
+        $data = $this->validatedPermission($request);
 
-        $role->givePermissionTo($request->permission_name);
+        $role->givePermissionTo($data['permission_name']);
 
         return response()->json([
             'message' => 'Permission added to role',
@@ -26,11 +31,9 @@ class RoleController extends Controller
     public function revokePermission(Request $request, Role $role)
     {
         $this->authorize('update roles');
-        $request->validate([
-            'permission_name' => 'required|string|exists:permissions,name',
-        ]);
+        $data = $this->validatedPermission($request);
 
-        $role->revokePermissionTo($request->permission_name);
+        $role->revokePermissionTo($data['permission_name']);
 
         return response()->json([
             'message' => 'Permission removed from role',

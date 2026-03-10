@@ -32,4 +32,28 @@ class AuthenticationController extends Controller
             'user' => $user,
         ]);
     }
+
+    public function signup(Request $request)
+    {
+        // Validate incoming request
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email',
+            'password' => 'required|string|min:8|confirmed',
+            // include password_confirmation field in request
+        ]);
+
+        // Create the user
+        $user = User::create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => $data['password'],
+        ]);
+
+        // Return response
+        return response()->json([
+            'message' => 'User registered successfully',
+            'user' => $user,
+        ], 201);
+    }
 }
