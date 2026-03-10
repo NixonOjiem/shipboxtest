@@ -7,6 +7,9 @@ use Illuminate\Support\Facades\Route;
 //     return $request->user();
 // })->middleware('auth:sanctum');
 
+// test route to check if the server is running
 Route::get('/testserver', function () {
     return response()->json(['messages' => 'Hi server running']);
 });
+
+
