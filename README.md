@@ -17,10 +17,10 @@ Note: Update your DB_DATABASE, DB_USERNAME, and DB_PASSWORD in .env
 
 ## Project initializiation
 
-php artisan key:generate
-php artisan migrate
-php artisan db:seed # Seeds Roles, Permissions, and a default Admin
-user: email:admin@app.com password: secretAdmin123
+1. php artisan key:generate
+2. php artisan migrate
+3. php artisan db:seed # Seeds Roles, Permissions, and a default Admin
+4. user: email:admin@app.com password: secretAdmin123
 
 ## start server
 
@@ -48,10 +48,10 @@ php artisan db:seed
 
 ## Controllers
 
-UserController → Manage users (roles)
-RoleController → Manage roles & permissions
-ProductController → CRUD for products
-OrderController → CRUD for orders
+1. UserController → Manage users (roles)
+2. RoleController → Manage roles & permissions
+3. ProductController → CRUD for products
+4. OrderController → CRUD for orders
 
 ## Policies
 
@@ -59,9 +59,9 @@ OrderPolicy → Only Admins or the Seller who owns the order can update orders.
 
 ## Stock Management
 
-Trait → Handles increasing/decreasing product stock.
-Observer → Listens to Order updates:
-On status changes (delivered, returned, etc.), stock is automatically adjusted. Registered in AppServiceProvider
+1. Trait → Handles increasing/decreasing product stock.
+2. Observer → Listens to Order updates:
+   On status changes (delivered, returned, etc.), stock is automatically adjusted. Registered in AppServiceProvider
 
 ## Order Statuses
 
