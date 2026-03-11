@@ -19,7 +19,8 @@ Note: Update your DB_DATABASE, DB_USERNAME, and DB_PASSWORD in .env
 
 php artisan key:generate
 php artisan migrate
-php artisan db:seed # Seeds Roles, Permissions, and a default Admin user: email:admin@app.com password: secretAdmin123
+php artisan db:seed # Seeds Roles, Permissions, and a default Admin
+user: email:admin@app.com password: secretAdmin123
 
 ## start server
 
