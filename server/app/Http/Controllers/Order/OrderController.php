@@ -30,37 +30,46 @@ class OrderController extends Controller
         DB::beginTransaction();
 
         try {
+
             $totalPrice = 0;
             $totalQuantity = 0;
             $productAttachments = [];
 
-            // Loop through products to calculate totals and pivot data
+            //  Optimization: Fetch all products in one query to improve performance
+            $productIds = collect($validated['products'])->pluck('id');
+            $products = Product::whereIn('id', $productIds)->get()->keyBy('id');
+
+            // Loop through the input data
             foreach ($validated['products'] as $productData) {
-                $product = Product::findOrFail($productData['id']);
+                $product = $products->get($productData['id']);
 
-                // Calculate cumulative totals
-                $totalPrice += ($product->price * $productData['quantity']);
-                $totalQuantity += $productData['quantity'];
+                if ($product) {
+                    $quantity = $productData['quantity'];
 
-                // Prepare data for the pivot table (order_product)
-                $productAttachments[$product->id] = ['quantity' => $productData['quantity']];
+                    // Calculate cumulative totals
+                    // Ensure price is treated as a numeric value
+                    $totalPrice += ($product->price * $quantity);
+                    $totalQuantity += $quantity;
+
+                    // Prepare data for the pivot table
+                    $productAttachments[$product->id] = ['quantity' => $quantity];
+                }
             }
 
-            // Create the Order
+            // 4. Create the Order
             $order = Order::create([
-                'order_id' => 'ORD-' . strtoupper(Str::random(8)), // (need more clarification)** Unique business ID
-                'user_id' => auth()->id(), // The logged-in Seller/Admin
+                'order_id' => 'ORD-' . strtoupper(Str::random(8)),
+                'user_id' => auth()->id(),
                 'customer_phone' => $validated['customer_phone'],
                 'customer_address' => $validated['customer_address'],
-                'status' => 'to prepare', // Default starting status
+                'status' => 'to prepare',
                 'note' => $validated['note'] ?? null,
                 'total_price' => $totalPrice,
                 'quantity' => $totalQuantity,
             ]);
 
-            // Attach products with their pivot quantities
+            // 5. Attach products
             $order->products()->attach($productAttachments);
-
             DB::commit();
 
             return response()->json([

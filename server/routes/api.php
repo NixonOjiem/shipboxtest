@@ -31,7 +31,6 @@ Route::middleware(['auth:sanctum', 'can:update users'])->group(function () {
 
 });
 
-
 // Products routes
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/product-post', [ProductController::class, 'store'])->middleware('can:create products');
@@ -45,7 +44,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/order-post', [OrderController::class, 'createOrder'])->middleware('can:create orders');
     Route::get('/order-fetch/{user}/seller-orders', [OrderController::class, 'fetchSellerOrders'])->middleware('can:read orders');
-    Route::get('/order-fetch-all', [OrderController::class, 'fetchAllOrders'])->middleware('role:Admin');
+    Route::get('/order-fetch-all', [OrderController::class, 'fetchAllOrders'])->middleware('role:Admin,web');
     Route::post('/order/{order}/delete', [OrderController::class, 'deleteOrder'])->middleware('can:delete orders');
     Route::patch('/order/{order}/update', [OrderController::class, 'updateOrder'])->middleware('can:update orders');
 });
