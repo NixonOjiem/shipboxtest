@@ -14,7 +14,7 @@ Route::get('/testserver', function () {
     return response()->json(['messages' => 'Hi, server running']);
 });
 
-// Authentication routes
+//Public Authentication Routes
 Route::post('/login', [AuthenticationController::class, 'login']);
 Route::post('/signup', [AuthenticationController::class, 'signup']);
 
@@ -37,7 +37,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/products/{product}/delete', [ProductController::class, 'destroy'])->middleware('can:delete products');
     Route::patch('/products/{product}/modify-price', [ProductController::class, 'modifyPrice'])->middleware('can:update products');
     Route::patch('/ptoducts/{product}/modify-name', [ProductController::class, 'modifyName'])->middleware('can:update products');
-    Route::delete('/product/{product}/delete', [ProductController::class, 'destroy'])->middleware('can:delete products');
+    // Route::delete('/product/{product}/delete', [ProductController::class, 'destroy'])->middleware('can:delete products');
 });
 
 //order routes
