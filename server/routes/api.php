@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthenticationController;
+use App\Http\Controllers\Order\OrderController;
 use App\Http\Controllers\Product\ProductController;
 use App\Http\Controllers\Role\RoleController;
 use App\Http\Controllers\User\UserContoller;
@@ -49,5 +50,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::patch('/products/{product}/modify-price', [ProductController::class, 'modifyPrice'])->middleware('can:update products');
     Route::patch('/ptoducts/{product}/modify-name', [ProductController::class, 'modifyName'])->middleware('can:update products');
     Route::delete('/product/{product}/delete', [ProductController::class, 'destroy'])->middleware('can:delete products');
+});
+
+//order routes
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::post('/order-post', [OrderController::class, 'createOrder'])->middleware('can:create orders');
+    Route::get('/order-fetch', [OrderController::class, 'fetchOrders'])->middleware('can:read orders');
+    Route::post('/order/{order}/delete', [OrderController::class, 'deleteOrder'])->middleware('can:delete orders');
+    Route::patch('/order/{order}/update', [OrderController::class, 'updateOrder'])->middleware('can:update orders');
 });
 
