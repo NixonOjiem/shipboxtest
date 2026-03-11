@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Log;
 
-class UserContoller extends Controller
+class UserController extends Controller
 {
     //validation
     private function validateRole(Request $request)

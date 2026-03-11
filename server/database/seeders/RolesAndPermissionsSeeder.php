@@ -21,34 +21,56 @@ class RolesAndPermissionsSeeder extends Seeder
         // Create all permissions
         foreach ($entities as $entity) {
             foreach ($actions as $action) {
-                Permission::create(['name' => "{$action} {$entity}"]);
+                Permission::firstOrCreate(['name' => "{$action} {$entity}"]);
             }
         }
 
+        // Rename existing  old capitalised names
+        $this->renameRoleIfExists('Admin', 'admin');
+        $this->renameRoleIfExists('Seller', 'seller');
+
         // Create Roles
-        $adminRole = Role::create(['name' => 'Admin']);
-        $sellerRole = Role::create(['name' => 'Seller']);
+        $adminRole = Role::firstOrCreate(['name' => 'admin']);
+        $sellerRole = Role::firstOrCreate(['name' => 'seller']);
 
         // Admin gets all permissions
-        $adminRole->givePermissionTo(Permission::all());
+        $adminRole->syncPermissions(Permission::all());
 
         // Seller gets specific permissions
-        $sellerRole->givePermissionTo([
+        $sellerRole->syncPermissions([
             'read products',
             'create orders',
             'read orders',
-            'update orders'
-            // no deleting orders or managing users for seller
-            // no uploading products yet from sellers, have request admin for that.
+            'update orders',
+            'delete orders',
+            'create products'
+            //sellers can now add new pppproducts and delete products
         ]);
 
         //test user who is admin
-        $adminUser = User::create([
-            'name' => 'Super Admin',
-            'email' => 'admin@app.com',
-            'password' => 'secretAdmin123',
-        ]);
+        $adminUser = User::firstOrCreate(
+            ['email' => 'admin@app.com'], //as a search creteria
+            [
+                'name' => 'Super Admin',
+                'password' => 'secretAdmin123', // will be hashed automatically
+            ]
+        );
 
-        $adminUser->assignRole('Admin');
+        $adminUser->syncRoles('admin');
+    }
+
+    // rename Roles with capital letters to lower case
+    private function renameRoleIfExists(string $oldName, string $newName): void
+    {
+        // Check for exact old name (case‑sensitive)
+        $oldExists = Role::whereRaw('BINARY `name` = ?', [$oldName])->exists();
+        // Check for exact new name (case‑sensitive)
+        $newExists = Role::whereRaw('BINARY `name` = ?', [$newName])->exists();
+
+        if ($oldExists && !$newExists) {
+            Role::whereRaw('BINARY `name` = ?', [$oldName])->update(['name' => $newName]);
+        }
     }
 }
+
+

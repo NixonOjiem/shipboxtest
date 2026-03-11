@@ -20,6 +20,8 @@ Route::post('/signup', [AuthenticationController::class, 'signup']);
 
 // Products routes
 Route::middleware(['auth:sanctum'])->group(function () {
+    // logout route
+    Route::post('/logout', [AuthenticationController::class, 'logout']);
     // Products routes
     Route::post('/product-post', [ProductController::class, 'store'])->middleware('can:create products');
     //Route::post('/products/{product}/delete', [ProductController::class, 'destroy'])->middleware('can:delete products');
@@ -29,7 +31,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     //order routes
     Route::post('/order-post', [OrderController::class, 'createOrder'])->middleware('can:create orders');
-    Route::get('/order-fetch-all', [OrderController::class, 'fetchAllOrders'])->middleware('role:Admin');
+    Route::get('/order-fetch-all', [OrderController::class, 'fetchAllOrders'])->middleware('role:admin');
     Route::get('/order-fetch/{user}/seller-orders', [OrderController::class, 'fetchSellerOrders'])->middleware('can:read orders');
     Route::delete('/orders/{order}/delete', [OrderController::class, 'deleteOrder'])->middleware('can:delete orders');
     Route::patch('/orders/{order}/update', [OrderController::class, 'updateOrder'])->middleware('can:update orders');

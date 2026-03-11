@@ -61,4 +61,15 @@ class AuthenticationController extends Controller
             'user' => $user,
         ], 201);
     }
+
+    public function logout(Request $request)
+    {
+        // Revoke the token from all devices
+        $request->user()->tokens()->delete();
+        // revoke from the current device
+        // $request->user()->currentAccessToken()->delete();
+
+        return response()->json(['message' => 'user logged out successfully']);
+
+    }
 }
