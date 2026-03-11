@@ -8,17 +8,6 @@ use App\Http\Controllers\User\UserContoller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-// Route::get('/user', function (Request $request) {
-//     return $request->user();
-// })->middleware('auth:sanctum');
-
-// Routes to manage permissions on roles
-// Route::middleware(['auth:sanctum', 'can:update users'])->group(function () {
-//     Route::post('/roles/{role}/give-permission', [RoleController::class, 'givePermission']);
-//     Route::post('/roles/{role}/revoke-permission', [RoleController::class, 'revokePermission']);
-// });
-
-
 
 // test route to check if the server is running
 Route::get('/testserver', function () {
@@ -55,8 +44,32 @@ Route::middleware(['auth:sanctum'])->group(function () {
 //order routes
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/order-post', [OrderController::class, 'createOrder'])->middleware('can:create orders');
-    Route::get('/order-fetch', [OrderController::class, 'fetchOrders'])->middleware('can:read orders');
+    Route::get('/order-fetch/{user}/seller-orders', [OrderController::class, 'fetchSellerOrders'])->middleware('can:read orders');
+    Route::get('/order-fetch-all', [OrderController::class, 'fetchAllOrders'])->middleware('role:Admin');
     Route::post('/order/{order}/delete', [OrderController::class, 'deleteOrder'])->middleware('can:delete orders');
     Route::patch('/order/{order}/update', [OrderController::class, 'updateOrder'])->middleware('can:update orders');
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Route::get('/user', function (Request $request) {
+//     return $request->user();
+// })->middleware('auth:sanctum');
+
+// Routes to manage permissions on roles
+// Route::middleware(['auth:sanctum', 'can:update users'])->group(function () {
+//     Route::post('/roles/{role}/give-permission', [RoleController::class, 'givePermission']);
+//     Route::post('/roles/{role}/revoke-permission', [RoleController::class, 'revokePermission']);
+// });
 
