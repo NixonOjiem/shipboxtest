@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Log;
+use Illuminate\Support\Facades\Gate;
 
 class OrderController extends Controller
 {
@@ -106,6 +107,8 @@ class OrderController extends Controller
 
     public function updateOrder(Request $request, Order $order)
     {
+
+        Gate::authorize('update', $order);
         // Define the exact statuses allowed by your requirements
         $validated = $request->validate([
             'status' => 'sometimes|required|in:onhold,returned,delivered,refunded,outofstock,cancelled,shipped,to prepare',
