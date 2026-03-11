@@ -33,20 +33,36 @@ Route::middleware(['auth:sanctum', 'can:update users'])->group(function () {
 
 // Products routes
 Route::middleware(['auth:sanctum'])->group(function () {
+    // Products routes
     Route::post('/product-post', [ProductController::class, 'store'])->middleware('can:create products');
     Route::post('/products/{product}/delete', [ProductController::class, 'destroy'])->middleware('can:delete products');
     Route::patch('/products/{product}/modify-price', [ProductController::class, 'modifyPrice'])->middleware('can:update products');
     Route::patch('/ptoducts/{product}/modify-name', [ProductController::class, 'modifyName'])->middleware('can:update products');
     // Route::delete('/product/{product}/delete', [ProductController::class, 'destroy'])->middleware('can:delete products');
-});
 
-//order routes
-Route::middleware(['auth:sanctum'])->group(function () {
+    //order routes
     Route::post('/order-post', [OrderController::class, 'createOrder'])->middleware('can:create orders');
     Route::get('/order-fetch-all', [OrderController::class, 'fetchAllOrders'])->middleware('role:Admin');
     Route::get('/order-fetch/{user}/seller-orders', [OrderController::class, 'fetchSellerOrders'])->middleware('can:read orders');
     Route::post('/order/{order}/delete', [OrderController::class, 'deleteOrder'])->middleware('can:delete orders');
     Route::patch('/order/{order}/update', [OrderController::class, 'updateOrder'])->middleware('can:update orders');
+
+    // Route to assign and revoke roles || Routes to manage permissions on roles
+    // Routes to manage permissions on roles
+    Route::post('/users/{user}/assign-role', [UserContoller::class, 'assignRole'])->middleware('can:update users');
+    Route::post('/users/{user}/remove-role', [UserContoller::class, 'removeRole'])->middleware('can:update users');
+    //Routes to manage permissions on roles
+    Route::post('/roles/{role}/give-permission', [RoleController::class, 'givePermission'])->middleware('can:update users');
+    Route::post('/roles/{role}/revoke-permission', [RoleController::class, 'revokePermission'])->middleware('can:update users');
+
+
+
+
+});
+
+//order routes
+Route::middleware(['auth:sanctum'])->group(function () {
+
 });
 
 
