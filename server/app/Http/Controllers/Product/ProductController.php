@@ -5,22 +5,51 @@ namespace App\Http\Controllers\Product;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use App\Models\User;
 
 class ProductController extends Controller
 {
     //handle product storage (post)
     public function createProduct(Request $request)
     {
-        $validated = $request->validate([
+        $currentUser = $request->user();
+
+        // check if admin
+        $isAdmin = $currentUser->hasRole('admin');
+
+        // base  rules
+        $rules = [
             'name' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
             'current_stock' => 'required|integer|min:0',
-        ]);
+        ];
 
-        //attach the users ID (relationship already in user model)
-        $product = $request->user()->products()->create($validated);
+        // If an admin, FORCE them to provide a valid user_id
+        if ($isAdmin) {
+            $rules['user_id'] = 'required|exists:users,id';
+        }
 
-        return response()->json(['message' => 'product created successfully', 'product' => $product], 201);
+        $validated = $request->validate($rules);
+
+        // Determine user model to attach the product to
+        if ($isAdmin) {
+            // Fetch the selected user
+            $targetUser = User::findOrFail($validated['user_id']);
+
+            // Remove 'user_id' from the validated array to prevent Mass Assignment Exceptions
+            unset($validated['user_id']);
+        } else {
+            // Regular users create products for themselves
+            $targetUser = $currentUser;
+        }
+
+        // Attach the product to the resolved target user
+        $product = $targetUser->products()->create($validated);
+
+        return response()->json([
+            'message' => 'Product created successfully',
+            'product' => $product
+        ], 201);
     }
 
 
