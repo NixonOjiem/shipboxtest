@@ -23,11 +23,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // logout route
     Route::post('/logout', [AuthenticationController::class, 'logout']);
     // Products routes
-    Route::post('/product-post', [ProductController::class, 'store'])->middleware('can:create products');
-    //Route::post('/products/{product}/delete', [ProductController::class, 'destroy'])->middleware('can:delete products');
-    Route::patch('/products/{product}/modify-price', [ProductController::class, 'modifyPrice'])->middleware('can:update products');
-    Route::patch('/products/{product}/modify-name', [ProductController::class, 'modifyName'])->middleware('can:update products');
-    Route::delete('/products/{product}/delete', [ProductController::class, 'destroy'])->middleware('can:delete products');
+    Route::post('/product-post', [ProductController::class, 'createProduct'])->middleware('can:create products');
+    Route::patch('/products/{product}', [ProductController::class, 'updateProductDetails'])->middleware('can:update products');
+    Route::delete('/products/{product}/delete', [ProductController::class, 'deleteProduct'])->middleware('can:delete products');
 
     //order routes
     Route::post('/order-post', [OrderController::class, 'createOrder'])->middleware('can:create orders');

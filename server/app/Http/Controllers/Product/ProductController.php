@@ -17,45 +17,55 @@ class ProductController extends Controller
             'current_stock' => 'required|integer|min:0',
         ]);
 
-        $product = Product::create($validated);
-        return response()->json($product, 201);
+        //attach the users ID (relationship already in user model)
+        $product = $request->user()->products()->create($validated);
+
+        return response()->json(['message' => 'product created successfully', 'product' => $product], 201);
     }
-    // modifying the price
-    public function modifyPrice(Request $request, Product $product)
+
+
+    // update product details
+    public function updateProductDetails(Request $request, Product $product)
     {
+        //check if user is admin or owns the product
+        if ($product->user_id !== $request->user()->id && !$request->user()->hasRole('Admin')) {
+            return response()->json([
+                'message' => 'Unauthorized. You can only modify your own products.'
+            ], 403);
+        }
+
         $validated = $request->validate([
-            'price' => 'required|numeric|min:0',
+            'name' => 'sometimes|string|max:255',
+            'price' => 'sometimes|numeric|min:0',
+            'current_stock' => 'sometimes|integer|min:0',
         ]);
 
-        $product->update([
-            'price' => $validated['price'],
-        ]);
+        $product->update($validated);
 
-        return response()->json([
-            'message' => 'Price updated successfully',
-            'product' => $product,
-        ], 200);
+        response()->json(['message' => 'product updated sucessfully', 'product' => $product], 200);
+
     }
-    // modify the name of the product
-    public function modifyName(Request $request, Product $product)
-    {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-        ]);
 
-        $product->update([
-            'name' => $validated['name'],
-        ]);
-
-        return response()->json([
-            'message' => 'Name updated successfully',
-            'product' => $product,
-        ], 200);
-    }
     //delete the product
     public function deleteProduct(Request $request, Product $product)
     {
-        // Delete the product from the database
+        // check if user owns the product or is admin
+        if ($product->user_id !== $request->user()->id && !$request->user()->hasRole('Admin')) {
+            return response()->json([
+                'message' => 'Unauthorized. You can only delete your own products.'
+            ], 403);
+        }
+
+        // prevent deletion of un delivered products
+        $hasUndeliveredOrders = $product->orders()->where('status', '!=', 'delivered')->exists();
+
+        if ($hasUndeliveredOrders) {
+            return response()->json([
+                'message' => 'Cannot delete product. It is attached to active orders that have not been delivered yet.'
+            ], 422);
+        }
+
+        // delete product
         $product->delete();
 
         return response()->json([

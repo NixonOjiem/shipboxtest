@@ -43,7 +43,9 @@ class RolesAndPermissionsSeeder extends Seeder
             'read orders',
             'update orders',
             'delete orders',
-            'create products'
+            'create products',
+            'update products',
+            'delete products'
             //sellers can now add new pppproducts and delete products
         ]);
 
