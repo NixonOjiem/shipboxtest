@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 class ProductController extends Controller
 {
     //handle product storage (post)
-    public function store(Request $request)
+    public function createProduct(Request $request)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -53,7 +53,7 @@ class ProductController extends Controller
         ], 200);
     }
     //delete the product
-    public function destroy(Request $request, Product $product)
+    public function deleteProduct(Request $request, Product $product)
     {
         // Delete the product from the database
         $product->delete();
