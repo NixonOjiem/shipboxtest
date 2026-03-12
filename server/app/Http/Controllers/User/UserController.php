@@ -5,7 +5,7 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
-use Log;
+use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
@@ -41,6 +41,19 @@ class UserController extends Controller
         return response()->json([
             'message' => 'Role removed',
             'roles' => $user->getRoleNames()
+        ], 200);
+    }
+
+    public function changeRole(Request $request, user $user)
+    {
+        //validate data
+        $data = $this->validateRole($request);
+        //sync wipes old role validate new ones
+        $user->syncRoles($data['role_name']);
+
+        return response()->json([
+            'message' => 'role changed successfully',
+            'role' => $user->getRoleNames()
         ], 200);
     }
 }
