@@ -125,7 +125,6 @@ class OrderController extends Controller
             return response()->json(['message' => 'Unauthorized to update this order.'], 403);
         }
 
-        Gate::authorize('update', $order);
         // Define the exact statuses allowed by requirements
         $validated = $request->validate([
             'status' => 'sometimes|required|in:onhold,returned,delivered,refunded,outofstock,cancelled,shipped,to prepare',
