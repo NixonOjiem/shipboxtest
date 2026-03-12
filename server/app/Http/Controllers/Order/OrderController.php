@@ -37,8 +37,20 @@ class OrderController extends Controller
             $productAttachments = [];
 
             //  Optimization: Fetch all products in one query to improve performance
-            $productIds = collect($validated['products'])->pluck('id');
-            $products = Product::whereIn('id', $productIds)->get()->keyBy('id');
+            $productIds = collect($validated['products'])->pluck('id')->unique();
+
+            //get products that belong to the authenticated seller
+            $products = Product::whereIn('id', $productIds)
+                ->where('user_id', auth()->id())
+                ->get()
+                ->keyBy('id');
+
+            // If the counts don't match seller added products they do not own.
+            if ($products->count() !== $productIds->count()) {
+                return response()->json([
+                    'message' => 'Forbidden. You can only create orders for products you own.'
+                ], 403);
+            }
 
             // Loop through the input data
             foreach ($validated['products'] as $productData) {
@@ -92,24 +104,29 @@ class OrderController extends Controller
         }
     }
 
-    // Fetch all orders for admins
-
-    public function fetchAllOrders()
+    //Fetch orders both admin and sellers
+    public function fetchOrders(Request $request)
     {
-        // Use eager loading ('with')
-        $orders = Order::with(['products', 'seller'])->latest()->paginate(15);
+        $query = Order::with(['products', 'seller'])->latest();
+
+        if (!auth()->user()->hasRole('admin')) {
+            $query->where('user_id', auth()->id());
+        }
+        $orders = $query->paginate(15);
 
         return response()->json($orders);
     }
 
-
     // Update order (Handles status changes that trigger the Observer)
-
     public function updateOrder(Request $request, Order $order)
     {
+        //sellers update their own orders and admin updates all
+        if (auth()->id() !== $order->user_id && !auth()->user()->hasRole('Admin')) {
+            return response()->json(['message' => 'Unauthorized to update this order.'], 403);
+        }
 
         Gate::authorize('update', $order);
-        // Define the exact statuses allowed by your requirements
+        // Define the exact statuses allowed by requirements
         $validated = $request->validate([
             'status' => 'sometimes|required|in:onhold,returned,delivered,refunded,outofstock,cancelled,shipped,to prepare',
             'note' => 'nullable|string',
@@ -126,38 +143,18 @@ class OrderController extends Controller
 
 
     // Delete an order
-
     public function deleteOrder(Request $request, Order $order)
     {
-        $order->delete();
+        //sellers delete their order and admin any
+        if (auth()->id() !== $order->user_id && !auth()->user()->hasRole('Admin')) {
+            return response()->json(['message' => 'Unauthorized to delete this order.'], 403);
+        }
+        //deletes order and safely remove from pivot
+        $order->products()->detach();
+        $order->delete()->detach;
 
         return response()->json([
             'message' => 'Order deleted successfully'
-        ]);
-    }
-
-    // fetch sellers orders
-    public function fetchSellerOrders(Request $request, User $user)
-    {
-        // Authorization: the user or the Admin
-        if (auth()->id() !== $user->id && !auth()->user()->hasRole('Admin')) {
-            return response()->json(['message' => 'Unauthorized to view these orders.'], 403);
-        }
-
-        // Fetch the orders using the Eloquent relationship
-        $orders = $user->orders()
-            ->with('products')
-            ->latest() // Orders by created_at descending
-            ->paginate(15);
-
-        // Return the response
-        return response()->json([
-            'seller' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-            ],
-            'orders' => $orders
         ]);
     }
 }

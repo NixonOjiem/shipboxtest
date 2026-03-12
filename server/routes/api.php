@@ -29,10 +29,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     //order routes
     Route::post('/order-post', [OrderController::class, 'createOrder'])->middleware('can:create orders');
-    Route::get('/order-fetch-all', [OrderController::class, 'fetchAllOrders'])->middleware('role:admin');
-    Route::get('/order-fetch/{user}/seller-orders', [OrderController::class, 'fetchSellerOrders'])->middleware('can:read orders');
-    Route::delete('/orders/{order}/delete', [OrderController::class, 'deleteOrder'])->middleware('can:delete orders');
+    Route::get('/order-fetch', [OrderController::class, 'fetchOrders'])->middleware('can:read orders');
     Route::patch('/orders/{order}/update', [OrderController::class, 'updateOrder'])->middleware('can:update orders');
+    Route::delete('/orders/{order}/delete', [OrderController::class, 'deleteOrder'])->middleware('can:delete orders');
 
     // Route to assign and revoke roles || Routes to manage permissions on roles
     Route::middleware('can:update users')->group(function () {

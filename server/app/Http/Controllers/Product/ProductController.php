@@ -28,7 +28,7 @@ class ProductController extends Controller
     public function updateProductDetails(Request $request, Product $product)
     {
         //check if user is admin or owns the product
-        if ($product->user_id !== $request->user()->id && !$request->user()->hasRole('Admin')) {
+        if ($product->user_id !== $request->user()->id && !$request->user()->hasRole('admin')) {
             return response()->json([
                 'message' => 'Unauthorized. You can only modify your own products.'
             ], 403);
@@ -50,7 +50,7 @@ class ProductController extends Controller
     public function deleteProduct(Request $request, Product $product)
     {
         // check if user owns the product or is admin
-        if ($product->user_id !== $request->user()->id && !$request->user()->hasRole('Admin')) {
+        if ($product->user_id !== $request->user()->id && !$request->user()->hasRole('admin')) {
             return response()->json([
                 'message' => 'Unauthorized. You can only delete your own products.'
             ], 403);
