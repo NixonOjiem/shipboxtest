@@ -5,11 +5,12 @@ namespace App\Http\Controllers\Stock;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Product;
-use App\Traits\ManagesStock;
+// use App\Traits\ManagesStock;
+use App\Helpers\StockHelper;
 
 class StockController extends Controller
 {
-    use ManagesStock;
+    // use ManagesStock;
 
     public function adjust(Request $request, Product $product)
     {
@@ -22,13 +23,13 @@ class StockController extends Controller
         ]);
 
         if ($validated['action'] === 'add') {
-            $this->increaseStock($product, $validated['quantity']);
+            StockHelper::increase($product, $validated['quantity']);
         } else {
             // Prevent stock from going below 0
             if ($product->current_stock < $validated['quantity']) {
                 return response()->json(['error' => 'Insufficient stock'], 422);
             }
-            $this->decreaseStock($product, $validated['quantity']);
+            StockHelper::decrease($product, $validated['quantity']);
         }
 
         return response()->json([

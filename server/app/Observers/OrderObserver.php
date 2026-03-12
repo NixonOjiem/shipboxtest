@@ -4,12 +4,12 @@ namespace App\Observers;
 
 use App\Models\Order;
 // use App\Traits\ManagesStock;
-use App\Traits\ManagesStock;
+use App\Helpers\StockHelper;
 use Illuminate\Support\Facades\DB;
 
 class OrderObserver
 {
-    use ManagesStock;
+    // use ManagesStock;
     /**
      * Handle the Order "created" event.
      */
@@ -35,12 +35,12 @@ class OrderObserver
 
                     // Logic: Status changes to 'delivered'
                     if ($newStatus === 'delivered' && $oldStatus !== 'delivered') {
-                        $this->decreaseStock($product, $quantity);
+                        StockHelper::decrease($product, $quantity);
                     }
 
                     // Logic: Status changes from 'delivered' to 'returned'
                     if ($newStatus === 'returned' && $oldStatus === 'delivered') {
-                        $this->increaseStock($product, $quantity);
+                        StockHelper::increase($product, $quantity);
                     }
                 }
             });
