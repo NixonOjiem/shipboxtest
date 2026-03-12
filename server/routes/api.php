@@ -37,7 +37,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::middleware('can:update users')->group(function () {
         // Routes to manage permissions on roles
         Route::post('/users/{user}/assign-role', [UserController::class, 'assignRole']);
-        Route::post('/users/{user}/remove-role', [UserController::class, 'removeRole']);
+        Route::post('/users/{user}/change-role', [UserController::class, 'changeRole']);
         //Routes to manage permissions on roles
         Route::post('/roles/{role}/give-permission', [RoleController::class, 'givePermission']);
         Route::post('/roles/{role}/revoke-permission', [RoleController::class, 'revokePermission']);
