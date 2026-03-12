@@ -31,19 +31,6 @@ class UserController extends Controller
         ], 201);
     }
 
-    public function removeRole(Request $request, User $user)
-    {
-        // Authorization is now handled by the 'can' middleware in api.php
-        $data = $this->validateRole($request);
-
-        $user->removeRole($data['role_name']);
-
-        return response()->json([
-            'message' => 'Role removed',
-            'roles' => $user->getRoleNames()
-        ], 200);
-    }
-
     public function changeRole(Request $request, user $user)
     {
         //validate data
