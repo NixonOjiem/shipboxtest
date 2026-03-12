@@ -9,7 +9,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Log;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Gate;
 
 class OrderController extends Controller
@@ -19,14 +19,25 @@ class OrderController extends Controller
 
     public function createOrder(Request $request)
     {
-        $validated = $request->validate([
+        $currentUser = $request->user();
+        $isAdmin = $currentUser->hasRole('admin');
+
+        //base validation rules
+        $rules = [
             'customer_phone' => 'required|string|max:20',
             'customer_address' => 'required|string',
             'note' => 'nullable|string',
             'products' => 'required|array|min:1',
             'products.*.id' => 'required|exists:products,id',
             'products.*.quantity' => 'required|integer|min:1',
-        ]);
+        ];
+        // if they are admin
+        if ($isAdmin) {
+            $rules['user_id'] = 'required|exists:users,id';
+        }
+
+        $validated = $request->validate($rules);
+        $targetUserId = $isAdmin ? $validated['user_id'] : $currentUser->id;
 
         DB::beginTransaction();
 
@@ -39,9 +50,9 @@ class OrderController extends Controller
             //  Optimization: Fetch all products in one query to improve performance
             $productIds = collect($validated['products'])->pluck('id')->unique();
 
-            //get products that belong to the authenticated seller
+            //get products that belong to the target seller
             $products = Product::whereIn('id', $productIds)
-                ->where('user_id', auth()->id())
+                ->where('user_id', $targetUserId)
                 ->get()
                 ->keyBy('id');
 
@@ -72,7 +83,7 @@ class OrderController extends Controller
             // 4. Create the Order
             $order = Order::create([
                 'order_id' => 'ORD-' . strtoupper(Str::random(8)),
-                'user_id' => auth()->id(),
+                'user_id' => $targetUserId,
                 'customer_phone' => $validated['customer_phone'],
                 'customer_address' => $validated['customer_address'],
                 'status' => 'to prepare',

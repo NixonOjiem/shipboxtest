@@ -36,7 +36,7 @@ class ProductController extends Controller
             // Fetch the selected user
             $targetUser = User::findOrFail($validated['user_id']);
 
-            // Remove 'user_id' from the validated array to prevent Mass Assignment Exceptions
+            //prevent Mass Assignment Exceptions. relationship handles it
             unset($validated['user_id']);
         } else {
             // Regular users create products for themselves
