@@ -26,7 +26,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/product-post', [ProductController::class, 'createProduct'])->middleware('can:create products');
     Route::patch('/products/{product}', [ProductController::class, 'updateProductDetails'])->middleware('can:update products');
     Route::delete('/products/{product}/delete', [ProductController::class, 'deleteProduct'])->middleware('can:delete products');
-
+    Route::get('/products', [ProductController::class, 'fetchProducts'])->middleware('can:read products');
     //order routes
     Route::post('/order-post', [OrderController::class, 'createOrder'])->middleware('can:create orders');
     Route::get('/order-fetch', [OrderController::class, 'fetchOrders'])->middleware('can:read orders');

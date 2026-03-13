@@ -101,4 +101,21 @@ class ProductController extends Controller
             'message' => 'Product deleted successfully'
         ], 200);
     }
+
+    public function fetchProducts(Request $request)
+    {
+        // get user
+        $authUser = auth()->user();
+        //check if admin
+        if ($authUser->hasRole('admin')) {
+            $products = Product::with('user')->get();
+
+            return response()->json(['message' => 'successfull', 'data' => $products]);
+
+        }
+
+        //for sellers
+        $products = $authUser->products()->get();
+        return response()->json(['message' => 'sucessfull', 'data' => $products]);
+    }
 }
