@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\AuthenticationController;
 use App\Http\Controllers\Order\OrderController;
 use App\Http\Controllers\Product\ProductController;
 use App\Http\Controllers\Role\RoleController;
+use App\Http\Controllers\Stock\StockController;
 use App\Http\Controllers\User\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -27,6 +28,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::patch('/products/{product}', [ProductController::class, 'updateProductDetails'])->middleware('can:update products');
     Route::delete('/products/{product}/delete', [ProductController::class, 'deleteProduct'])->middleware('can:delete products');
     Route::get('/products', [ProductController::class, 'fetchProducts'])->middleware('can:read products');
+    Route::patch('/products/{product}/adjust', [StockController::class, 'adjust'])->middleware('can:update products');
     //order routes
     Route::post('/order-post', [OrderController::class, 'createOrder'])->middleware('can:create orders');
     Route::get('/order-fetch', [OrderController::class, 'fetchOrders'])->middleware('can:read orders');

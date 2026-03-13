@@ -319,7 +319,7 @@ class OrderController extends Controller
             return response()->json(['message' => 'Unauthorized to update this order.'], 403);
         }
 
-        // Define the exact statuses allowed by requirements
+        // exact statuses allowed by requirements
         $validated = $request->validate([
             'status' => 'sometimes|required|in:onhold,returned,delivered,refunded,outofstock,cancelled,shipped,to prepare',
             'note' => 'nullable|string',

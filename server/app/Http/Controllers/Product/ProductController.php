@@ -102,6 +102,8 @@ class ProductController extends Controller
         ], 200);
     }
 
+
+    //to fetch products
     public function fetchProducts(Request $request)
     {
         // get user

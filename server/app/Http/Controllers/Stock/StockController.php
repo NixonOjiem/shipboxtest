@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Stock;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Models\Product;
 // use App\Traits\ManagesStock;
@@ -14,9 +15,11 @@ class StockController extends Controller
 
     public function adjust(Request $request, Product $product)
     {
-        // Ensure only authorized users can manually adjust stock
-        $this->authorize('update products');
+        $authUser = auth()->user();
 
+        if (!$authUser->hasRole('admin') && $authUser->id !== $product->user_id) {
+            return response()->json(['message' => 'you are not authorized to ajust this products stock'], 403);
+        }
         $validated = $request->validate([
             'action' => 'required|in:add,subtract',
             'quantity' => 'required|integer|min:1'
