@@ -17,7 +17,7 @@ class OrderController extends Controller
 
     /**
      * @OA\Post(
-     * path="/api/orders",
+     * path="/api/order-post",
      * summary="Create a new order",
      * description="Creates an order for the authenticated user or for a specific user if the requester is an admin.",
      * tags={"Orders"},
@@ -182,7 +182,7 @@ class OrderController extends Controller
 
     /**
      * @OA\Get(
-     * path="/api/orders",
+     * path="/api/order-fetch",
      * summary="Fetch a list of orders",
      * description="Returns a paginated list of orders. Admins can view all orders, while regular users see only their own.",
      * tags={"Orders"},
@@ -249,7 +249,7 @@ class OrderController extends Controller
 
     /**
      * @OA\Put(
-     * path="/api/orders/{id}",
+     * path="/api/orders/{id}/update",
      * summary="Update an existing order",
      * description="Allows a seller to update their own order or an Admin to update any order. Triggers OrderObserver on status change.",
      * tags={"Orders"},
@@ -336,7 +336,7 @@ class OrderController extends Controller
 
     /**
      * @OA\Delete(
-     * path="/api/orders/{id}",
+     * path="/api/orders/{id}/delete",
      * summary="Delete an order",
      * description="Permanently deletes an order and removes its associations with products. Sellers can delete their own orders, while Admins can delete any order.",
      * tags={"Orders"},
@@ -378,7 +378,6 @@ class OrderController extends Controller
      * )
      * )
      */
-
 
     // Delete an order
     public function deleteOrder(Request $request, Order $order)

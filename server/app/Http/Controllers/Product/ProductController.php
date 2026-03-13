@@ -9,6 +9,61 @@ use App\Models\User;
 
 class ProductController extends Controller
 {
+    /**
+     * @OA\Post(
+     * path="/api/products-post",
+     * summary="Create a new product",
+     * description="Allows sellers to create their own products and admins to create products for any user. Admins MUST provide a user_id.",
+     * operationId="createProduct",
+     * tags={"Products"},
+     * security={{ "sanctum": {} }},
+     * @OA\RequestBody(
+     * required=true,
+     * @OA\JsonContent(
+     * required={"name", "price", "current_stock"},
+     * @OA\Property(property="name", type="string", example="Wireless Mouse"),
+     * @OA\Property(property="price", type="number", format="float", example=29.99),
+     * @OA\Property(property="current_stock", type="integer", example=100),
+     * @OA\Property(
+     * property="user_id",
+     * type="integer",
+     * description="Required only if the authenticated user is an admin. The ID of the user who will own the product.",
+     * example=5
+     * )
+     * )
+     * ),
+     * @OA\Response(
+     * response=201,
+     * description="Product created successfully",
+     * @OA\JsonContent(
+     * @OA\Property(property="message", type="string", example="Product created successfully"),
+     * @OA\Property(
+     * property="product",
+     * type="object",
+     * @OA\Property(property="id", type="integer", example=1),
+     * @OA\Property(property="name", type="string", example="Wireless Mouse"),
+     * @OA\Property(property="price", type="number", example=29.99),
+     * @OA\Property(property="current_stock", type="integer", example=100),
+     * @OA\Property(property="user_id", type="integer", example=5),
+     * @OA\Property(property="created_at", type="string", format="date-time"),
+     * @OA\Property(property="updated_at", type="string", format="date-time")
+     * )
+     * )
+     * ),
+     * @OA\Response(
+     * response=422,
+     * description="Validation error (e.g., missing fields or invalid user_id for admin)"
+     * ),
+     * @OA\Response(
+     * response=401,
+     * description="Unauthenticated"
+     * ),
+     * @OA\Response(
+     * response=403,
+     * description="Unauthorized - User does not have permission to create products"
+     * )
+     * )
+     */
     //handle product storage (post)
     public function createProduct(Request $request)
     {
@@ -108,12 +163,11 @@ class ProductController extends Controller
     {
         // get user
         $authUser = auth()->user();
+
         //check if admin
         if ($authUser->hasRole('admin')) {
             $products = Product::with('user')->get();
-
             return response()->json(['message' => 'successfull', 'data' => $products]);
-
         }
 
         //for sellers
