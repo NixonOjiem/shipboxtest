@@ -107,6 +107,57 @@ class ProductController extends Controller
         ], 201);
     }
 
+    /**
+     * @OA\Patch(
+     * path="/api/products/{product}",
+     * summary="Update an existing product",
+     * description="Allows owners to update their own products and admins to update any product. Fields are optional (PATCH).",
+     * operationId="updateProductDetails",
+     * tags={"Products"},
+     * security={{ "sanctum": {} }},
+     * @OA\Parameter(
+     * name="product",
+     * in="path",
+     * description="ID of the product to update",
+     * required=true,
+     * @OA\Schema(type="integer")
+     * ),
+     * @OA\RequestBody(
+     * required=true,
+     * @OA\JsonContent(
+     * @OA\Property(property="name", type="string", example="Updated Gaming Mouse"),
+     * @OA\Property(property="price", type="number", format="float", example=35.50),
+     * @OA\Property(property="current_stock", type="integer", example=150)
+     * )
+     * ),
+     * @OA\Response(
+     * response=200,
+     * description="Product updated successfully",
+     * @OA\JsonContent(
+     * @OA\Property(property="message", type="string", example="product updated successfully"),
+     * @OA\Property(property="product", type="object",
+     * @OA\Property(property="id", type="integer", example=1),
+     * @OA\Property(property="name", type="string", example="Updated Gaming Mouse"),
+     * @OA\Property(property="price", type="number", example=35.50),
+     * @OA\Property(property="current_stock", type="integer", example=150),
+     * @OA\Property(property="user_id", type="integer", example=5)
+     * )
+     * )
+     * ),
+     * @OA\Response(
+     * response=403,
+     * description="Unauthorized - You do not own this product and are not an admin"
+     * ),
+     * @OA\Response(
+     * response=404,
+     * description="Product not found"
+     * ),
+     * @OA\Response(
+     * response=422,
+     * description="Validation error"
+     * )
+     * )
+     */
 
     // update product details
     public function updateProductDetails(Request $request, Product $product)
@@ -126,7 +177,7 @@ class ProductController extends Controller
 
         $product->update($validated);
 
-        response()->json(['message' => 'product updated sucessfully', 'product' => $product], 200);
+        return response()->json(['message' => 'product updated sucessfully', 'product' => $product], 200);
 
     }
 

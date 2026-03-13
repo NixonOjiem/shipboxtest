@@ -447,14 +447,14 @@
                 ]
             }
         },
-        "/api/orders/{id}/update": {
+        "/api/orders/{order}/update": {
             "put": {
                 "tags": [
                     "Orders"
                 ],
                 "summary": "Update an existing order",
                 "description": "Allows a seller to update their own order or an Admin to update any order. Triggers OrderObserver on status change.",
-                "operationId": "3d64d3a511669da049f3c7af033ebb8d",
+                "operationId": "b8a72bc64a55587929078fb64a682ec6",
                 "parameters": [
                     {
                         "name": "id",
@@ -593,14 +593,14 @@
                 ]
             }
         },
-        "/api/orders/{id}/delete": {
+        "/api/orders/{order}/delete": {
             "delete": {
                 "tags": [
                     "Orders"
                 ],
                 "summary": "Delete an order",
                 "description": "Permanently deletes an order and removes its associations with products. Sellers can delete their own orders, while Admins can delete any order.",
-                "operationId": "ad9fe4e0fb05573800aad9106f19ef7d",
+                "operationId": "f450b501d11677da9e42c2c5fcb8a6f8",
                 "parameters": [
                     {
                         "name": "id",
@@ -787,6 +787,109 @@
                     },
                     "403": {
                         "description": "Unauthorized - User does not have permission to create products"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/products/{product}": {
+            "patch": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Update an existing product",
+                "description": "Allows owners to update their own products and admins to update any product. Fields are optional (PATCH).",
+                "operationId": "updateProductDetails",
+                "parameters": [
+                    {
+                        "name": "product",
+                        "in": "path",
+                        "description": "ID of the product to update",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Updated Gaming Mouse"
+                                    },
+                                    "price": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 35.5
+                                    },
+                                    "current_stock": {
+                                        "type": "integer",
+                                        "example": 150
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Product updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "product updated successfully"
+                                        },
+                                        "product": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "Updated Gaming Mouse"
+                                                },
+                                                "price": {
+                                                    "type": "number",
+                                                    "example": 35.5
+                                                },
+                                                "current_stock": {
+                                                    "type": "integer",
+                                                    "example": 150
+                                                },
+                                                "user_id": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorized - You do not own this product and are not an admin"
+                    },
+                    "404": {
+                        "description": "Product not found"
+                    },
+                    "422": {
+                        "description": "Validation error"
                     }
                 },
                 "security": [

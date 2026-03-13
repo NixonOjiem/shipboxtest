@@ -249,7 +249,7 @@ class OrderController extends Controller
 
     /**
      * @OA\Put(
-     * path="/api/orders/{id}/update",
+     * path="/api/orders/{order}/update",
      * summary="Update an existing order",
      * description="Allows a seller to update their own order or an Admin to update any order. Triggers OrderObserver on status change.",
      * tags={"Orders"},
@@ -336,7 +336,7 @@ class OrderController extends Controller
 
     /**
      * @OA\Delete(
-     * path="/api/orders/{id}/delete",
+     * path="/api/orders/{order}/delete",
      * summary="Delete an order",
      * description="Permanently deletes an order and removes its associations with products. Sellers can delete their own orders, while Admins can delete any order.",
      * tags={"Orders"},
