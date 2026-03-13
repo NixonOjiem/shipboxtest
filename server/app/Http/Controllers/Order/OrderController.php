@@ -315,6 +315,7 @@ class OrderController extends Controller
     public function updateOrder(Request $request, Order $order)
     {
         //sellers update their own orders and admin updates all
+        // update to product policy or use cutom middleware
         if (auth()->id() !== $order->user_id && !auth()->user()->hasRole('Admin')) {
             return response()->json(['message' => 'Unauthorized to update this order.'], 403);
         }
@@ -383,6 +384,7 @@ class OrderController extends Controller
     public function deleteOrder(Request $request, Order $order)
     {
         //sellers delete their order and admin any
+        // update to order policy or use cutom middleware
         if (auth()->id() !== $order->user_id && !auth()->user()->hasRole('Admin')) {
             return response()->json(['message' => 'Unauthorized to delete this order.'], 403);
         }

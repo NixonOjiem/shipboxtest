@@ -163,6 +163,7 @@ class ProductController extends Controller
     public function updateProductDetails(Request $request, Product $product)
     {
         //check if user is admin or owns the product
+        // update to product policy or use cutom middleware
         if ($product->user_id !== $request->user()->id && !$request->user()->hasRole('admin')) {
             return response()->json([
                 'message' => 'Unauthorized. You can only modify your own products.'
@@ -175,9 +176,12 @@ class ProductController extends Controller
             'current_stock' => 'sometimes|integer|min:0',
         ]);
 
-        $product->update($validated);
+        $product->update(attributes: $validated);
 
-        return response()->json(['message' => 'product updated sucessfully', 'product' => $product], 200);
+        return response()->json(data: [
+            'message' => 'product updated sucessfully',
+            'product' => $product
+        ], );
 
     }
 
@@ -185,6 +189,7 @@ class ProductController extends Controller
     public function deleteProduct(Request $request, Product $product)
     {
         // check if user owns the product or is admin
+        // update to product policy or use cutom middleware
         if ($product->user_id !== $request->user()->id && !$request->user()->hasRole('admin')) {
             return response()->json([
                 'message' => 'Unauthorized. You can only delete your own products.'
@@ -216,13 +221,14 @@ class ProductController extends Controller
         $authUser = auth()->user();
 
         //check if admin
+        // update to product policy or use cutom middleware
         if ($authUser->hasRole('admin')) {
             $products = Product::with('user')->get();
             return response()->json(['message' => 'successfull', 'data' => $products]);
         }
 
         //for sellers
-        $products = $authUser->products()->get();
+        $products = $authUser->products()->latest()->get();
         return response()->json(['message' => 'sucessfull', 'data' => $products]);
     }
 }
