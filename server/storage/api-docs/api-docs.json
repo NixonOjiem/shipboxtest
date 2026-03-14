@@ -137,7 +137,7 @@
                     "Orders"
                 ],
                 "summary": "Create a new order",
-                "description": "Creates an order for the authenticated user or for a specific user if the requester is an admin.",
+                "description": "Creates an order for the authenticated user or for a specific user if the requester is an admin. Validates that all products belong to the order owner.",
                 "operationId": "afa45dec6d3ec58823e62ea881a5878e",
                 "requestBody": {
                     "required": true,
@@ -147,7 +147,8 @@
                                 "required": [
                                     "customer_phone",
                                     "customer_address",
-                                    "products"
+                                    "products",
+                                    "total_price"
                                 ],
                                 "properties": {
                                     "customer_phone": {
@@ -164,6 +165,12 @@
                                         "example": "Please deliver after 5 PM",
                                         "nullable": true
                                     },
+                                    "total_price": {
+                                        "description": "Cumulative price of all products",
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 150.5
+                                    },
                                     "user_id": {
                                         "description": "Required only if requester is an admin. Specifies the owner of the order.",
                                         "type": "integer",
@@ -172,8 +179,13 @@
                                     "products": {
                                         "type": "array",
                                         "items": {
+                                            "required": [
+                                                "id",
+                                                "quantity"
+                                            ],
                                             "properties": {
                                                 "id": {
+                                                    "description": "The product ID",
                                                     "type": "integer",
                                                     "example": 101
                                                 },
@@ -206,22 +218,66 @@
                                         },
                                         "order": {
                                             "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
                                                 "order_id": {
                                                     "type": "string",
                                                     "example": "ORD-ABC12345"
+                                                },
+                                                "user_id": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                },
+                                                "customer_phone": {
+                                                    "type": "string",
+                                                    "example": "0123456789"
+                                                },
+                                                "customer_address": {
+                                                    "type": "string",
+                                                    "example": "123 Main St, City"
+                                                },
+                                                "status": {
+                                                    "type": "string",
+                                                    "example": "to prepare"
                                                 },
                                                 "total_price": {
                                                     "type": "number",
                                                     "format": "float",
                                                     "example": 150.5
                                                 },
-                                                "status": {
-                                                    "type": "string",
-                                                    "example": "to prepare"
+                                                "quantity": {
+                                                    "description": "Total quantity of all items",
+                                                    "type": "integer",
+                                                    "example": 2
                                                 },
                                                 "products": {
                                                     "type": "array",
                                                     "items": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 101
+                                                            },
+                                                            "pivot": {
+                                                                "properties": {
+                                                                    "order_id": {
+                                                                        "type": "integer",
+                                                                        "example": 1
+                                                                    },
+                                                                    "product_id": {
+                                                                        "type": "integer",
+                                                                        "example": 101
+                                                                    },
+                                                                    "quantity": {
+                                                                        "type": "integer",
+                                                                        "example": 2
+                                                                    }
+                                                                },
+                                                                "type": "object"
+                                                            }
+                                                        },
                                                         "type": "object"
                                                     }
                                                 }
@@ -235,7 +291,7 @@
                         }
                     },
                     "403": {
-                        "description": "Forbidden - User attempting to add products they do not own",
+                        "description": "Forbidden - Attempting to order products not owned by the target user",
                         "content": {
                             "application/json": {
                                 "schema": {

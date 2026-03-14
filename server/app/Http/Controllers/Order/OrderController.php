@@ -26,23 +26,25 @@ class OrderController extends Controller
      * @OA\Post(
      * path="/api/order-post",
      * summary="Create a new order",
-     * description="Creates an order for the authenticated user or for a specific user if the requester is an admin.",
+     * description="Creates an order for the authenticated user or for a specific user if the requester is an admin. Validates that all products belong to the order owner.",
      * tags={"Orders"},
      * security={{"bearerAuth":{}}},
      * @OA\RequestBody(
      * required=true,
      * @OA\JsonContent(
-     * required={"customer_phone", "customer_address", "products"},
+     * required={"customer_phone", "customer_address", "products", "total_price"},
      * @OA\Property(property="customer_phone", type="string", example="0123456789", description="Max 20 characters"),
      * @OA\Property(property="customer_address", type="string", example="123 Main St, City"),
      * @OA\Property(property="note", type="string", nullable=true, example="Please deliver after 5 PM"),
+     * @OA\Property(property="total_price", type="number", format="float", example=150.50, description="Cumulative price of all products"),
      * @OA\Property(property="user_id", type="integer", example=5, description="Required only if requester is an admin. Specifies the owner of the order."),
      * @OA\Property(
      * property="products",
      * type="array",
      * minItems=1,
      * @OA\Items(
-     * @OA\Property(property="id", type="integer", example=101),
+     * required={"id", "quantity"},
+     * @OA\Property(property="id", type="integer", example=101, description="The product ID"),
      * @OA\Property(property="quantity", type="integer", example=2, minimum=1)
      * )
      * )
@@ -54,16 +56,31 @@ class OrderController extends Controller
      * @OA\JsonContent(
      * @OA\Property(property="message", type="string", example="Order created successfully"),
      * @OA\Property(property="order", type="object",
+     * @OA\Property(property="id", type="integer", example=1),
      * @OA\Property(property="order_id", type="string", example="ORD-ABC12345"),
-     * @OA\Property(property="total_price", type="number", format="float", example=150.50),
+     * @OA\Property(property="user_id", type="integer", example=5),
+     * @OA\Property(property="customer_phone", type="string", example="0123456789"),
+     * @OA\Property(property="customer_address", type="string", example="123 Main St, City"),
      * @OA\Property(property="status", type="string", example="to prepare"),
-     * @OA\Property(property="products", type="array", @OA\Items(type="object"))
+     * @OA\Property(property="total_price", type="number", format="float", example=150.50),
+     * @OA\Property(property="quantity", type="integer", example=2, description="Total quantity of all items"),
+     * @OA\Property(property="products", type="array",
+     * @OA\Items(
+     * type="object",
+     * @OA\Property(property="id", type="integer", example=101),
+     * @OA\Property(property="pivot", type="object",
+     * @OA\Property(property="order_id", type="integer", example=1),
+     * @OA\Property(property="product_id", type="integer", example=101),
+     * @OA\Property(property="quantity", type="integer", example=2)
+     * )
+     * )
+     * )
      * )
      * )
      * ),
      * @OA\Response(
      * response=403,
-     * description="Forbidden - User attempting to add products they do not own",
+     * description="Forbidden - Attempting to order products not owned by the target user",
      * @OA\JsonContent(
      * @OA\Property(property="message", type="string", example="Forbidden. You can only create orders for products you own.")
      * )
@@ -88,10 +105,11 @@ class OrderController extends Controller
      */
 
     // Handle order creation
-
     public function createOrder(Request $request)
     {
-        $currentUser = $request->user();
+        $currentUser = auth()->user();
+
+        //$currentUser = $request->user();
         $isAdmin = $currentUser->hasRole('admin');
 
         //base validation rules
@@ -102,6 +120,7 @@ class OrderController extends Controller
             'products' => 'required|array|min:1',
             'products.*.id' => 'required|exists:products,id',
             'products.*.quantity' => 'required|integer|min:1',
+            'total_price' => 'required|numeric|min:1' //numeric to handle integer
         ];
         // if they are admin
         if ($isAdmin) {
@@ -115,7 +134,6 @@ class OrderController extends Controller
 
         try {
 
-            $totalPrice = 0;
             $totalQuantity = 0;
             $productAttachments = [];
 
@@ -143,8 +161,6 @@ class OrderController extends Controller
                     $quantity = $productData['quantity'];
 
                     // Calculate cumulative totals
-                    // Ensure price is treated as a numeric value
-                    $totalPrice += ($product->price * $quantity);
                     $totalQuantity += $quantity;
 
                     // Prepare data for the pivot table
@@ -152,15 +168,20 @@ class OrderController extends Controller
                 }
             }
 
+            do {
+                $orderId = 'ORD-' . strtoupper(Str::random(8));
+            } while (Order::where('order_id', $orderId)->exists());
+
+
             // 4. Create the Order
             $order = Order::create([
-                'order_id' => 'ORD-' . strtoupper(Str::random(2)),
+                'order_id' => $orderId,
                 'user_id' => $targetUserId,
                 'customer_phone' => $validated['customer_phone'],
                 'customer_address' => $validated['customer_address'],
                 'status' => 'to prepare',
                 'note' => $validated['note'] ?? null,
-                'total_price' => $totalPrice,
+                'total_price' => $validated['total_price'],
                 'quantity' => $totalQuantity,
             ]);
 
@@ -180,6 +201,7 @@ class OrderController extends Controller
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             return response()->json([
                 'message' => 'Failed to create order',
                 'error' => $e->getMessage()

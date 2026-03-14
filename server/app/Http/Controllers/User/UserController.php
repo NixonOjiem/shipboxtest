@@ -40,6 +40,7 @@ class UserController extends Controller
     {
         //validate data
         $data = $this->validateRole($request);
+
         //sync wipes old role validate new ones
         $user->syncRoles($data['role_name']);
 

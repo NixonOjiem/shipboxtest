@@ -10,11 +10,17 @@ class Product extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'price', 'current_stock', 'user_id'];
+    protected $fillable = [
+        'name',
+        'price',
+        'current_stock',
+        //'user_id'
+        'seller_id'
+    ];
 
-    public function user()
+    public function seller()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'seller_id');
     }
 
     public function orders()

@@ -16,7 +16,6 @@ class ProductController extends Controller
         $this->middleware('can:update products')->only('updateProductDetails');
         $this->middleware('can:delete products')->only('deleteProduct');
         $this->middleware('can:read products')->only('fetchProducts');
-
     }
 
     /**
@@ -77,7 +76,8 @@ class ProductController extends Controller
     //handle product storage (post)
     public function createProduct(Request $request)
     {
-        $currentUser = $request->user();
+        //$currentUser = $request->user();
+        $currentUser = auth()->user();
 
         // check if admin
         $isAdmin = $currentUser->hasRole('admin');

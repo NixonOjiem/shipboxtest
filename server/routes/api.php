@@ -19,8 +19,9 @@ Route::get('/testserver', function () {
 Route::post('/login', [AuthenticationController::class, 'login']);
 Route::post('/signup', [AuthenticationController::class, 'signup']);
 
-// Products routes
+// routes that require authentication
 Route::middleware(['auth:sanctum'])->group(function () {
+
     // logout route
     Route::post('/logout', [AuthenticationController::class, 'logout']);
 
