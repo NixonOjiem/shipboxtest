@@ -137,7 +137,7 @@
                     "Orders"
                 ],
                 "summary": "Create a new order",
-                "description": "Creates an order for the authenticated user or for a specific user if the requester is an admin. Validates that all products belong to the order owner.",
+                "description": "Creates an order for the authenticated seller or for a specific seller if the requester is an admin. Validates that all products belong to the target seller.",
                 "operationId": "afa45dec6d3ec58823e62ea881a5878e",
                 "requestBody": {
                     "required": true,
@@ -169,10 +169,11 @@
                                         "description": "Cumulative price of all products",
                                         "type": "number",
                                         "format": "float",
+                                        "minimum": 1,
                                         "example": 150.5
                                     },
-                                    "user_id": {
-                                        "description": "Required only if requester is an admin. Specifies the owner of the order.",
+                                    "seller_id": {
+                                        "description": "Required only if requester is an admin. Specifies the owner of the products and order.",
                                         "type": "integer",
                                         "example": 5
                                     },
@@ -226,7 +227,7 @@
                                                     "type": "string",
                                                     "example": "ORD-ABC12345"
                                                 },
-                                                "user_id": {
+                                                "seller_id": {
                                                     "type": "integer",
                                                     "example": 5
                                                 },
@@ -242,13 +243,18 @@
                                                     "type": "string",
                                                     "example": "to prepare"
                                                 },
+                                                "note": {
+                                                    "type": "string",
+                                                    "example": "Please deliver after 5 PM",
+                                                    "nullable": true
+                                                },
                                                 "total_price": {
                                                     "type": "number",
                                                     "format": "float",
                                                     "example": 150.5
                                                 },
                                                 "quantity": {
-                                                    "description": "Total quantity of all items",
+                                                    "description": "Total cumulative quantity of all items",
                                                     "type": "integer",
                                                     "example": 2
                                                 },
@@ -291,7 +297,7 @@
                         }
                     },
                     "403": {
-                        "description": "Forbidden - Attempting to order products not owned by the target user",
+                        "description": "Forbidden - Attempting to order products not owned by the target seller",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -358,7 +364,7 @@
                     "Orders"
                 ],
                 "summary": "Fetch a list of orders",
-                "description": "Returns a paginated list of orders. Admins can view all orders, while regular users see only their own.",
+                "description": "Returns a paginated list of orders. Admins can view all orders across the system, while regular sellers see only their own orders.",
                 "operationId": "9dc6756a4866b675ac64be81ccef1a09",
                 "parameters": [
                     {
@@ -395,13 +401,17 @@
                                                         "type": "string",
                                                         "example": "ORD-XYZ123"
                                                     },
-                                                    "user_id": {
+                                                    "seller_id": {
                                                         "type": "integer",
                                                         "example": 5
                                                     },
                                                     "customer_phone": {
                                                         "type": "string",
                                                         "example": "0123456789"
+                                                    },
+                                                    "customer_address": {
+                                                        "type": "string",
+                                                        "example": "123 Main St, City"
                                                     },
                                                     "total_price": {
                                                         "type": "number",
@@ -412,14 +422,62 @@
                                                         "type": "string",
                                                         "example": "to prepare"
                                                     },
+                                                    "note": {
+                                                        "type": "string",
+                                                        "example": "Please deliver after 5 PM",
+                                                        "nullable": true
+                                                    },
+                                                    "quantity": {
+                                                        "type": "integer",
+                                                        "example": 3
+                                                    },
                                                     "seller": {
-                                                        "description": "The user who owns the order",
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 5
+                                                            },
+                                                            "name": {
+                                                                "type": "string",
+                                                                "example": "John Doe"
+                                                            },
+                                                            "email": {
+                                                                "type": "string",
+                                                                "example": "seller@example.com"
+                                                            }
+                                                        },
                                                         "type": "object"
                                                     },
                                                     "products": {
-                                                        "description": "List of products in the order",
                                                         "type": "array",
                                                         "items": {
+                                                            "properties": {
+                                                                "id": {
+                                                                    "type": "integer",
+                                                                    "example": 101
+                                                                },
+                                                                "name": {
+                                                                    "type": "string",
+                                                                    "example": "Product Name"
+                                                                },
+                                                                "pivot": {
+                                                                    "properties": {
+                                                                        "order_id": {
+                                                                            "type": "integer",
+                                                                            "example": 1
+                                                                        },
+                                                                        "product_id": {
+                                                                            "type": "integer",
+                                                                            "example": 101
+                                                                        },
+                                                                        "quantity": {
+                                                                            "type": "integer",
+                                                                            "example": 2
+                                                                        }
+                                                                    },
+                                                                    "type": "object"
+                                                                }
+                                                            },
                                                             "type": "object"
                                                         }
                                                     },
@@ -437,7 +495,7 @@
                                         },
                                         "first_page_url": {
                                             "type": "string",
-                                            "example": "http://api.test/orders?page=1"
+                                            "example": "http://api.test/api/order-fetch?page=1"
                                         },
                                         "last_page": {
                                             "type": "integer",
@@ -445,16 +503,16 @@
                                         },
                                         "last_page_url": {
                                             "type": "string",
-                                            "example": "http://api.test/orders?page=10"
+                                            "example": "http://api.test/api/order-fetch?page=10"
                                         },
                                         "next_page_url": {
                                             "type": "string",
-                                            "example": "http://api.test/orders?page=2",
+                                            "example": "http://api.test/api/order-fetch?page=2",
                                             "nullable": true
                                         },
                                         "path": {
                                             "type": "string",
-                                            "example": "http://api.test/orders"
+                                            "example": "http://api.test/api/order-fetch"
                                         },
                                         "per_page": {
                                             "type": "integer",
@@ -509,13 +567,13 @@
                     "Orders"
                 ],
                 "summary": "Update an existing order",
-                "description": "Allows a seller to update their own order or an Admin to update any order. Triggers OrderObserver on status change.",
+                "description": "Allows a seller to update their own order or an Admin to update any order. Note: Updating the status property will trigger the OrderObserver logic.",
                 "operationId": "b8a72bc64a55587929078fb64a682ec6",
                 "parameters": [
                     {
-                        "name": "id",
+                        "name": "order",
                         "in": "path",
-                        "description": "ID of the order to update",
+                        "description": "The ID of the order record",
                         "required": true,
                         "schema": {
                             "type": "integer",
@@ -530,6 +588,7 @@
                             "schema": {
                                 "properties": {
                                     "status": {
+                                        "description": "The new status of the order. Triggers business logic in the Observer.",
                                         "type": "string",
                                         "enum": [
                                             "onhold",
@@ -571,9 +630,22 @@
                                                     "type": "integer",
                                                     "example": 123
                                                 },
+                                                "order_id": {
+                                                    "type": "string",
+                                                    "example": "ORD-ABC12345"
+                                                },
+                                                "seller_id": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                },
                                                 "status": {
                                                     "type": "string",
                                                     "example": "shipped"
+                                                },
+                                                "note": {
+                                                    "type": "string",
+                                                    "example": "Customer requested delivery to back door.",
+                                                    "nullable": true
                                                 },
                                                 "products": {
                                                     "type": "array",
@@ -748,7 +820,7 @@
                     "Products"
                 ],
                 "summary": "Create a new product",
-                "description": "Allows sellers to create their own products and admins to create products for any user. Admins MUST provide a user_id.",
+                "description": "Allows sellers to create their own products and admins to create products for any user. Admins MUST provide a seller_id.",
                 "operationId": "createProduct",
                 "requestBody": {
                     "required": true,
@@ -763,18 +835,21 @@
                                 "properties": {
                                     "name": {
                                         "type": "string",
+                                        "maxLength": 255,
                                         "example": "Wireless Mouse"
                                     },
                                     "price": {
                                         "type": "number",
                                         "format": "float",
+                                        "minimum": 0,
                                         "example": 29.99
                                     },
                                     "current_stock": {
                                         "type": "integer",
+                                        "minimum": 0,
                                         "example": 100
                                     },
-                                    "user_id": {
+                                    "seller_id": {
                                         "description": "Required only if the authenticated user is an admin. The ID of the user who will own the product.",
                                         "type": "integer",
                                         "example": 5
@@ -808,13 +883,14 @@
                                                 },
                                                 "price": {
                                                     "type": "number",
+                                                    "format": "float",
                                                     "example": 29.99
                                                 },
                                                 "current_stock": {
                                                     "type": "integer",
                                                     "example": 100
                                                 },
-                                                "user_id": {
+                                                "seller_id": {
                                                     "type": "integer",
                                                     "example": 5
                                                 },
@@ -835,19 +911,61 @@
                             }
                         }
                     },
-                    "422": {
-                        "description": "Validation error (e.g., missing fields or invalid user_id for admin)"
-                    },
                     "401": {
-                        "description": "Unauthenticated"
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "403": {
-                        "description": "Unauthorized - User does not have permission to create products"
+                        "description": "Unauthorized - User does not have permission to create products",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "This action is unauthorized."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The seller id field is required when user is admin."
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
                     {
-                        "sanctum": []
+                        "bearerAuth": []
                     }
                 ]
             }
@@ -858,16 +976,17 @@
                     "Products"
                 ],
                 "summary": "Update an existing product",
-                "description": "Allows owners to update their own products and admins to update any product. Fields are optional (PATCH).",
+                "description": "Allows sellers to update their own products and admins to update any product. Fields are optional (PATCH).",
                 "operationId": "updateProductDetails",
                 "parameters": [
                     {
                         "name": "product",
                         "in": "path",
-                        "description": "ID of the product to update",
+                        "description": "The ID of the product to update",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "type": "integer",
+                            "example": 1
                         }
                     }
                 ],
@@ -879,15 +998,18 @@
                                 "properties": {
                                     "name": {
                                         "type": "string",
+                                        "maxLength": 255,
                                         "example": "Updated Gaming Mouse"
                                     },
                                     "price": {
                                         "type": "number",
                                         "format": "float",
+                                        "minimum": 0,
                                         "example": 35.5
                                     },
                                     "current_stock": {
                                         "type": "integer",
+                                        "minimum": 0,
                                         "example": 150
                                     }
                                 },
@@ -905,7 +1027,7 @@
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "product updated successfully"
+                                            "example": "product updated sucessfully"
                                         },
                                         "product": {
                                             "properties": {
@@ -919,15 +1041,24 @@
                                                 },
                                                 "price": {
                                                     "type": "number",
+                                                    "format": "float",
                                                     "example": 35.5
                                                 },
                                                 "current_stock": {
                                                     "type": "integer",
                                                     "example": 150
                                                 },
-                                                "user_id": {
+                                                "seller_id": {
                                                     "type": "integer",
                                                     "example": 5
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
                                                 }
                                             },
                                             "type": "object"
@@ -939,18 +1070,270 @@
                         }
                     },
                     "403": {
-                        "description": "Unauthorized - You do not own this product and are not an admin"
+                        "description": "Forbidden - Unauthorized to modify this product",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthorized. You can only modify your own products."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "404": {
-                        "description": "Product not found"
+                        "description": "Product not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No query results for model [App\\\\Models\\\\Product] 1"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "422": {
-                        "description": "Validation error"
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The price must be at least 0."
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
                     {
-                        "sanctum": []
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/products/{product}/delete": {
+            "delete": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Delete a product",
+                "description": "Permanently deletes a product record. Restrictions:\n        1. Only the product owner (seller) or an Admin can delete the product.\n        2. Products attached to active (undelivered) orders cannot be deleted.",
+                "operationId": "deleteProduct",
+                "parameters": [
+                    {
+                        "name": "product",
+                        "in": "path",
+                        "description": "The ID of the product to delete",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Product deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Product deleted successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - Unauthorized to delete this product",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthorized. You can only delete your own products."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Product not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No query results for model [App\\\\Models\\\\Product] 1"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Content - Product has active orders",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Cannot delete product. It is attached to active orders that have not been delivered yet."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/products": {
+            "get": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Fetch a list of products",
+                "description": "Returns a list of products. Admins can view all products with seller details, while sellers see only their own products.",
+                "operationId": "1dae06f890d45594cd6d5e98c7ef41a9",
+                "responses": {
+                    "200": {
+                        "description": "List of products retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "successfull"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "Wireless Mouse"
+                                                    },
+                                                    "price": {
+                                                        "type": "number",
+                                                        "format": "float",
+                                                        "example": 29.99
+                                                    },
+                                                    "current_stock": {
+                                                        "type": "integer",
+                                                        "example": 100
+                                                    },
+                                                    "seller_id": {
+                                                        "type": "integer",
+                                                        "example": 5
+                                                    },
+                                                    "seller": {
+                                                        "description": "Only returned for Admins",
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 5
+                                                            },
+                                                            "name": {
+                                                                "type": "string",
+                                                                "example": "John Doe"
+                                                            }
+                                                        },
+                                                        "type": "object",
+                                                        "nullable": true
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string",
+                                                        "format": "date-time"
+                                                    },
+                                                    "updated_at": {
+                                                        "type": "string",
+                                                        "format": "date-time"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
                     }
                 ]
             }
