@@ -120,15 +120,15 @@ class OrderController extends Controller
             'products' => 'required|array|min:1',
             'products.*.id' => 'required|exists:products,id',
             'products.*.quantity' => 'required|integer|min:1',
-            'total_price' => 'required|numeric|min:1' //numeric to handle integer
+            'total_price' => 'required|numeric|min:1' //numeric to handle decimals
         ];
         // if they are admin
         if ($isAdmin) {
-            $rules['user_id'] = 'required|exists:users,id';
+            $rules['seller_id'] = 'required|exists:users,id';
         }
 
         $validated = $request->validate($rules);
-        $targetUserId = $isAdmin ? $validated['user_id'] : $currentUser->id;
+        $targetSellerId = $isAdmin ? $validated['seller_id'] : $currentUser->id;
 
         DB::beginTransaction();
 
@@ -142,7 +142,7 @@ class OrderController extends Controller
 
             //get products that belong to the target seller
             $products = Product::whereIn('id', $productIds)
-                ->where('user_id', $targetUserId)
+                ->where('seller_id', $targetSellerId)
                 ->get()
                 ->keyBy('id');
 
@@ -176,7 +176,7 @@ class OrderController extends Controller
             // 4. Create the Order
             $order = Order::create([
                 'order_id' => $orderId,
-                'user_id' => $targetUserId,
+                'seller_id' => $targetSellerId,
                 'customer_phone' => $validated['customer_phone'],
                 'customer_address' => $validated['customer_address'],
                 'status' => 'to prepare',
@@ -269,7 +269,7 @@ class OrderController extends Controller
         $query = Order::with(['products', 'seller'])->latest();
 
         if (!auth()->user()->hasRole('admin')) {
-            $query->where('user_id', auth()->id()); //seler_id
+            $query->where('seller_id', auth()->id()); //seler_id
         }
         $orders = $query->paginate(15);
 
@@ -345,7 +345,7 @@ class OrderController extends Controller
     {
         //sellers update their own orders and admin updates all
         // update to product policy or use cutom middleware
-        if (auth()->id() !== $order->user_id && !auth()->user()->hasRole('Admin')) {
+        if (auth()->id() !== $order->seller_id && !auth()->user()->hasRole('Admin')) {
             return response()->json(['message' => 'Unauthorized to update this order.'], 403);
         }
 
