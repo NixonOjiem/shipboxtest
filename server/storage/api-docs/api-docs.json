@@ -1337,6 +1337,408 @@
                     }
                 ]
             }
+        },
+        "/api/roles/{role}/give-permission": {
+            "post": {
+                "tags": [
+                    "Roles & Permissions"
+                ],
+                "summary": "Assign a permission to a specific role",
+                "operationId": "6175b1475e4b4fbb99882fc72cb2b06c",
+                "parameters": [
+                    {
+                        "name": "role",
+                        "in": "path",
+                        "description": "The ID or Name of the role",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "permission_name"
+                                ],
+                                "properties": {
+                                    "permission_name": {
+                                        "type": "string",
+                                        "example": "edit articles"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Permission successfully assigned",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Permission added to role"
+                                        },
+                                        "permissions": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    },
+                    "403": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/api/roles/{role}/revoke-permission": {
+            "post": {
+                "tags": [
+                    "Roles & Permissions"
+                ],
+                "summary": "Remove a permission from a specific role",
+                "operationId": "2d5c50bff87f1a298b5b729e218df85c",
+                "parameters": [
+                    {
+                        "name": "role",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "permission_name"
+                                ],
+                                "properties": {
+                                    "permission_name": {
+                                        "type": "string",
+                                        "example": "edit articles"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Permission successfully removed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Permission removed from role"
+                                        },
+                                        "permissions": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/products/{product}/adjust": {
+            "patch": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Adjust product stock level",
+                "description": "Increases or decreases the stock of a product. Sellers can adjust their own products, while Admins can adjust any product. Prevents stock from going below zero.",
+                "operationId": "e7e7fdfb1c7e1316a803d9f996e5d60a",
+                "parameters": [
+                    {
+                        "name": "product",
+                        "in": "path",
+                        "description": "The ID of the product",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "action",
+                                    "quantity"
+                                ],
+                                "properties": {
+                                    "action": {
+                                        "description": "Direction of stock adjustment",
+                                        "type": "string",
+                                        "enum": [
+                                            "add",
+                                            "subtract"
+                                        ],
+                                        "example": "add"
+                                    },
+                                    "quantity": {
+                                        "description": "The amount to add or subtract",
+                                        "type": "integer",
+                                        "minimum": 1,
+                                        "example": 10
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Stock adjusted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Stock adjusted successfully"
+                                        },
+                                        "current_stock": {
+                                            "type": "integer",
+                                            "example": 110
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - Unauthorized to adjust this product",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "you are not authorized to ajust this products stock"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Content - Insufficient stock or validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Insufficient stock"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Product not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No query results for model [App\\\\Models\\\\Product] 1"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/users/{user}/assign-role": {
+            "post": {
+                "tags": [
+                    "User Management"
+                ],
+                "summary": "Assign a new role to a user",
+                "description": "Adds a role to the user without removing existing ones. Requires 'update users' permission.",
+                "operationId": "4f3f0cf846548b6f271f934e1e99ce45",
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "description": "ID of the user",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "role_name"
+                                ],
+                                "properties": {
+                                    "role_name": {
+                                        "description": "The name of the role existing in the database",
+                                        "type": "string",
+                                        "example": "writer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Role assigned successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Role assigned"
+                                        },
+                                        "roles": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "example": "writer"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error - role name is required or does not exist"
+                    },
+                    "403": {
+                        "description": "Forbidden - User lacks 'update users' permission"
+                    }
+                }
+            }
+        },
+        "/api/users/{user}/change-role": {
+            "post": {
+                "tags": [
+                    "User Management"
+                ],
+                "summary": "Sync/Replace user roles",
+                "description": "Wipes all existing roles and replaces them with the new specified role. Requires 'update users' permission.",
+                "operationId": "7a3cfc021e7c4d36786615cc8aa3ef02",
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "description": "ID of the user",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "role_name"
+                                ],
+                                "properties": {
+                                    "role_name": {
+                                        "type": "string",
+                                        "example": "admin"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Role updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "role changed successfully"
+                                        },
+                                        "role": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "example": "admin"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "User not found"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -1359,6 +1761,14 @@
         {
             "name": "Products",
             "description": "Products"
+        },
+        {
+            "name": "Roles & Permissions",
+            "description": "Roles & Permissions"
+        },
+        {
+            "name": "User Management",
+            "description": "User Management"
         }
     ]
 }
