@@ -79,6 +79,7 @@ class ProductController extends Controller
      * )
      * )
      */
+
     //handle product storage (post)
     public function createProduct(Request $request)
     {

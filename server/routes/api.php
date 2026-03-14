@@ -39,7 +39,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::delete('/orders/{order}/delete', [OrderController::class, 'deleteOrder']);
 
     // Route to assign and revoke roles || Routes to manage permissions on roles
-
     // Routes to manage permissions on roles
     Route::post('/users/{user}/assign-role', [UserController::class, 'assignRole']);
     Route::post('/users/{user}/change-role', [UserController::class, 'changeRole']);

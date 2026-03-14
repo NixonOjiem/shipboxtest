@@ -312,14 +312,12 @@ class OrderController extends Controller
      * @OA\RequestBody(
      * required=true,
      * @OA\JsonContent(
-     * @OA\Property(
-     * property="status",
-     * type="string",
-     * enum={"onhold", "returned", "delivered", "refunded", "outofstock", "cancelled", "shipped", "to prepare"},
-     * example="shipped",
-     * description="The new status of the order. Triggers business logic in the Observer."
-     * ),
-     * @OA\Property(property="note", type="string", nullable=true, example="Customer requested delivery to back door.")
+     * @OA\Property(property="status", type="string", enum={"onhold", "returned", "delivered", "refunded", "outofstock", "cancelled", "shipped", "to prepare"}, example="shipped"),
+     * @OA\Property(property="note", type="string", nullable=true, example="Customer requested delivery to back door."),
+     * @OA\Property(property="customer_address", type="string", maxLength=200, example="123 Main St, New York"),
+     * @OA\Property(property="customer_phone", type="string", maxLength=14, example="+1234567890"),
+     * @OA\Property(property="total_price", type="number", format="float", minimum=0, example=99.99),
+     * @OA\Property(property="quantity", type="integer", minimum=1, example=2)
      * )
      * ),
      * @OA\Response(
@@ -329,36 +327,17 @@ class OrderController extends Controller
      * @OA\Property(property="message", type="string", example="Order updated successfully"),
      * @OA\Property(property="order", type="object",
      * @OA\Property(property="id", type="integer", example=123),
-     * @OA\Property(property="order_id", type="string", example="ORD-ABC12345"),
-     * @OA\Property(property="seller_id", type="integer", example=5),
      * @OA\Property(property="status", type="string", example="shipped"),
-     * @OA\Property(property="note", type="string", nullable=true, example="Customer requested delivery to back door."),
+     * @OA\Property(property="customer_address", type="string", example="123 Main St, New York"),
+     * @OA\Property(property="total_price", type="number", example=99.99),
+     * @OA\Property(property="quantity", type="integer", example=2),
      * @OA\Property(property="products", type="array", @OA\Items(type="object"))
      * )
      * )
      * ),
-     * @OA\Response(
-     * response=403,
-     * description="Forbidden - Unauthorized to update this order",
-     * @OA\JsonContent(
-     * @OA\Property(property="message", type="string", example="Unauthorized to update this order.")
-     * )
-     * ),
-     * @OA\Response(
-     * response=404,
-     * description="Order not found",
-     * @OA\JsonContent(
-     * @OA\Property(property="message", type="string", example="No query results for model [App\\Models\\Order] 123")
-     * )
-     * ),
-     * @OA\Response(
-     * response=422,
-     * description="Validation Error",
-     * @OA\JsonContent(
-     * @OA\Property(property="message", type="string", example="The selected status is invalid."),
-     * @OA\Property(property="errors", type="object")
-     * )
-     * )
+     * @OA\Response(response=403, description="Forbidden"),
+     * @OA\Response(response=404, description="Not Found"),
+     * @OA\Response(response=422, description="Validation Error")
      * )
      */
 
@@ -375,6 +354,11 @@ class OrderController extends Controller
         $validated = $request->validate([
             'status' => 'sometimes|required|in:onhold,returned,delivered,refunded,outofstock,cancelled,shipped,to prepare',
             'note' => 'nullable|string',
+            'customer_address' => 'sometimes|required|string|max:200',
+            'customer_phone' => 'sometimes|required|string|max:14',
+            // Added numeric validation and minimums
+            'total_price' => 'sometimes|required|numeric|min:0',
+            'quantity' => 'sometimes|required|integer|min:1',
         ]);
 
         // if 'status' is changed OrderObserver is triggered

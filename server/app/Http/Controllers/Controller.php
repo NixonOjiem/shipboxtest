@@ -8,9 +8,9 @@ use Illuminate\Routing\Controller as BaseController;
 
 /**
  * @OA\Info(
- * version="1.0.0",
- * title="Shipbox API Documentation",
- * description="API Endpoints for Shipbox",
+ * version="2.0.1",
+ * title="Shipbox_test API Documentation",
+ * description="API Endpoints for Shipboxtest",
  * )
  * * @OA\SecurityScheme(
  * securityScheme="bearerAuth",
