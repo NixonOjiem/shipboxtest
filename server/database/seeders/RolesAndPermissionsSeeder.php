@@ -30,8 +30,9 @@ class RolesAndPermissionsSeeder extends Seeder
         $this->renameRoleIfExists('Seller', 'seller');
 
         // Create Roles
-        $adminRole = Role::firstOrCreate(['name' => 'admin']);
-        $sellerRole = Role::firstOrCreate(['name' => 'seller']);
+        $adminRole = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'api']);
+        $sellerRole = Role::firstOrCreate(['name' => 'seller', 'guard_name' => 'api']);
+
 
         // Admin gets all permissions
         $adminRole->syncPermissions(Permission::all());
@@ -42,10 +43,8 @@ class RolesAndPermissionsSeeder extends Seeder
             'create orders',
             'read orders',
             'update orders',
-            'delete orders',
             'create products',
-            'update products',
-            'delete products'
+            'update products'
             //sellers can now add new pppproducts and delete products
         ]);
 

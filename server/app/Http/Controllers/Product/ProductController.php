@@ -9,6 +9,16 @@ use App\Models\User;
 
 class ProductController extends Controller
 {
+
+    public function __construct()
+    {
+        $this->middleware('can:create products')->only('createProduct');
+        $this->middleware('can:update products')->only('updateProductDetails');
+        $this->middleware('can:delete products')->only('deleteProduct');
+        $this->middleware('can:read products')->only('fetchProducts');
+
+    }
+
     /**
      * @OA\Post(
      * path="/api/products-post",
@@ -81,7 +91,7 @@ class ProductController extends Controller
 
         // If an admin, FORCE them to provide a valid user_id
         if ($isAdmin) {
-            $rules['user_id'] = 'required|exists:users,id';
+            $rules['user_id'] = 'required|exists:users,id'; //seller_id change
         }
 
         $validated = $request->validate($rules);
@@ -223,7 +233,7 @@ class ProductController extends Controller
         //check if admin
         // update to product policy or use cutom middleware
         if ($authUser->hasRole('admin')) {
-            $products = Product::with('user')->get();
+            $products = Product::with('user')->get(); //pargination 15
             return response()->json(['message' => 'successfull', 'data' => $products]);
         }
 

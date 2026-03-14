@@ -14,7 +14,13 @@ use Illuminate\Support\Facades\Gate;
 
 class OrderController extends Controller
 {
-
+    public function __construct()
+    {
+        $this->middleware('can:create orders')->only('createOrder');
+        $this->middleware('can:read orders')->only('fetchOrders');
+        $this->middleware('can:update orders')->only('updateOrder');
+        $this->middleware('can:delete orders')->only('deleteOrder');
+    }
     /**
      * @OA\Post(
      * path="/api/order-post",
@@ -147,7 +153,7 @@ class OrderController extends Controller
 
             // 4. Create the Order
             $order = Order::create([
-                'order_id' => 'ORD-' . strtoupper(Str::random(8)),
+                'order_id' => 'ORD-' . strtoupper(Str::random(2)),
                 'user_id' => $targetUserId,
                 'customer_phone' => $validated['customer_phone'],
                 'customer_address' => $validated['customer_address'],
@@ -240,7 +246,7 @@ class OrderController extends Controller
         $query = Order::with(['products', 'seller'])->latest();
 
         if (!auth()->user()->hasRole('admin')) {
-            $query->where('user_id', auth()->id());
+            $query->where('user_id', auth()->id()); //seler_id
         }
         $orders = $query->paginate(15);
 
@@ -384,10 +390,16 @@ class OrderController extends Controller
     public function deleteOrder(Request $request, Order $order)
     {
         //sellers delete their order and admin any
-        // update to order policy or use cutom middleware
-        if (auth()->id() !== $order->user_id && !auth()->user()->hasRole('Admin')) {
-            return response()->json(['message' => 'Unauthorized to delete this order.'], 403);
+        $userId = auth()->id();
+        $orderId = $request->order_id;
+        $isSeller = auth()->user()->hasRole('seller');
+        $query = Order::where('order_id', '=', $orderId)->when($isSeller);
+
+        if ($isSeller) {
+            $order = $query->where('seller_id', '=', $userId)->first();
         }
+        //pass it in trait and pass it to an order
+
         //deletes order and safely remove from pivot
         $order->products()->detach();
         $order->delete()->detach;
