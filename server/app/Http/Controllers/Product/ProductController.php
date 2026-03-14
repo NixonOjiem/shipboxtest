@@ -22,19 +22,19 @@ class ProductController extends Controller
      * @OA\Post(
      * path="/api/products-post",
      * summary="Create a new product",
-     * description="Allows sellers to create their own products and admins to create products for any user. Admins MUST provide a user_id.",
+     * description="Allows sellers to create their own products and admins to create products for any user. Admins MUST provide a seller_id.",
      * operationId="createProduct",
      * tags={"Products"},
-     * security={{ "sanctum": {} }},
+     * security={{"bearerAuth":{}}},
      * @OA\RequestBody(
      * required=true,
      * @OA\JsonContent(
      * required={"name", "price", "current_stock"},
-     * @OA\Property(property="name", type="string", example="Wireless Mouse"),
-     * @OA\Property(property="price", type="number", format="float", example=29.99),
-     * @OA\Property(property="current_stock", type="integer", example=100),
+     * @OA\Property(property="name", type="string", example="Wireless Mouse", maxLength=255),
+     * @OA\Property(property="price", type="number", format="float", example=29.99, minimum=0),
+     * @OA\Property(property="current_stock", type="integer", example=100, minimum=0),
      * @OA\Property(
-     * property="user_id",
+     * property="seller_id",
      * type="integer",
      * description="Required only if the authenticated user is an admin. The ID of the user who will own the product.",
      * example=5
@@ -51,25 +51,31 @@ class ProductController extends Controller
      * type="object",
      * @OA\Property(property="id", type="integer", example=1),
      * @OA\Property(property="name", type="string", example="Wireless Mouse"),
-     * @OA\Property(property="price", type="number", example=29.99),
+     * @OA\Property(property="price", type="number", format="float", example=29.99),
      * @OA\Property(property="current_stock", type="integer", example=100),
-     * @OA\Property(property="user_id", type="integer", example=5),
+     * @OA\Property(property="seller_id", type="integer", example=5),
      * @OA\Property(property="created_at", type="string", format="date-time"),
      * @OA\Property(property="updated_at", type="string", format="date-time")
      * )
      * )
      * ),
      * @OA\Response(
-     * response=422,
-     * description="Validation error (e.g., missing fields or invalid user_id for admin)"
-     * ),
-     * @OA\Response(
      * response=401,
-     * description="Unauthenticated"
+     * description="Unauthenticated",
+     * @OA\JsonContent(@OA\Property(property="message", type="string", example="Unauthenticated."))
      * ),
      * @OA\Response(
      * response=403,
-     * description="Unauthorized - User does not have permission to create products"
+     * description="Unauthorized - User does not have permission to create products",
+     * @OA\JsonContent(@OA\Property(property="message", type="string", example="This action is unauthorized."))
+     * ),
+     * @OA\Response(
+     * response=422,
+     * description="Validation error",
+     * @OA\JsonContent(
+     * @OA\Property(property="message", type="string", example="The seller id field is required when user is admin."),
+     * @OA\Property(property="errors", type="object")
+     * )
      * )
      * )
      */
@@ -121,54 +127,65 @@ class ProductController extends Controller
      * @OA\Patch(
      * path="/api/products/{product}",
      * summary="Update an existing product",
-     * description="Allows owners to update their own products and admins to update any product. Fields are optional (PATCH).",
+     * description="Allows sellers to update their own products and admins to update any product. Fields are optional (PATCH).",
      * operationId="updateProductDetails",
      * tags={"Products"},
-     * security={{ "sanctum": {} }},
+     * security={{"bearerAuth":{}}},
      * @OA\Parameter(
      * name="product",
      * in="path",
-     * description="ID of the product to update",
+     * description="The ID of the product to update",
      * required=true,
-     * @OA\Schema(type="integer")
+     * @OA\Schema(type="integer", example=1)
      * ),
      * @OA\RequestBody(
      * required=true,
      * @OA\JsonContent(
-     * @OA\Property(property="name", type="string", example="Updated Gaming Mouse"),
-     * @OA\Property(property="price", type="number", format="float", example=35.50),
-     * @OA\Property(property="current_stock", type="integer", example=150)
+     * @OA\Property(property="name", type="string", example="Updated Gaming Mouse", maxLength=255),
+     * @OA\Property(property="price", type="number", format="float", example=35.50, minimum=0),
+     * @OA\Property(property="current_stock", type="integer", example=150, minimum=0)
      * )
      * ),
      * @OA\Response(
      * response=200,
      * description="Product updated successfully",
      * @OA\JsonContent(
-     * @OA\Property(property="message", type="string", example="product updated successfully"),
+     * @OA\Property(property="message", type="string", example="product updated sucessfully"),
      * @OA\Property(property="product", type="object",
      * @OA\Property(property="id", type="integer", example=1),
      * @OA\Property(property="name", type="string", example="Updated Gaming Mouse"),
-     * @OA\Property(property="price", type="number", example=35.50),
+     * @OA\Property(property="price", type="number", format="float", example=35.50),
      * @OA\Property(property="current_stock", type="integer", example=150),
-     * @OA\Property(property="user_id", type="integer", example=5)
+     * @OA\Property(property="seller_id", type="integer", example=5),
+     * @OA\Property(property="created_at", type="string", format="date-time"),
+     * @OA\Property(property="updated_at", type="string", format="date-time")
      * )
      * )
      * ),
      * @OA\Response(
      * response=403,
-     * description="Unauthorized - You do not own this product and are not an admin"
+     * description="Forbidden - Unauthorized to modify this product",
+     * @OA\JsonContent(
+     * @OA\Property(property="message", type="string", example="Unauthorized. You can only modify your own products.")
+     * )
      * ),
      * @OA\Response(
      * response=404,
-     * description="Product not found"
+     * description="Product not found",
+     * @OA\JsonContent(
+     * @OA\Property(property="message", type="string", example="No query results for model [App\\Models\\Product] 1")
+     * )
      * ),
      * @OA\Response(
      * response=422,
-     * description="Validation error"
+     * description="Validation error",
+     * @OA\JsonContent(
+     * @OA\Property(property="message", type="string", example="The price must be at least 0."),
+     * @OA\Property(property="errors", type="object")
+     * )
      * )
      * )
      */
-
     // update product details
     public function updateProductDetails(Request $request, Product $product)
     {
@@ -194,6 +211,60 @@ class ProductController extends Controller
         ], );
 
     }
+
+
+    /**
+     * @OA\Delete(
+     * path="/api/products/{product}/delete",
+     * summary="Delete a product",
+     * description="Permanently deletes a product record. Restrictions:
+        1. Only the product owner (seller) or an Admin can delete the product.
+        2. Products attached to active (undelivered) orders cannot be deleted.",
+     * operationId="deleteProduct",
+     * tags={"Products"},
+     * security={{"bearerAuth":{}}},
+     * @OA\Parameter(
+     * name="product",
+     * in="path",
+     * description="The ID of the product to delete",
+     * required=true,
+     * @OA\Schema(type="integer", example=1)
+     * ),
+     * @OA\Response(
+     * response=200,
+     * description="Product deleted successfully",
+     * @OA\JsonContent(
+     * @OA\Property(property="message", type="string", example="Product deleted successfully")
+     * )
+     * ),
+     * @OA\Response(
+     * response=401,
+     * description="Unauthenticated",
+     * @OA\JsonContent(@OA\Property(property="message", type="string", example="Unauthenticated."))
+     * ),
+     * @OA\Response(
+     * response=403,
+     * description="Forbidden - Unauthorized to delete this product",
+     * @OA\JsonContent(
+     * @OA\Property(property="message", type="string", example="Unauthorized. You can only delete your own products.")
+     * )
+     * ),
+     * @OA\Response(
+     * response=404,
+     * description="Product not found",
+     * @OA\JsonContent(
+     * @OA\Property(property="message", type="string", example="No query results for model [App\\Models\\Product] 1")
+     * )
+     * ),
+     * @OA\Response(
+     * response=422,
+     * description="Unprocessable Content - Product has active orders",
+     * @OA\JsonContent(
+     * @OA\Property(property="message", type="string", example="Cannot delete product. It is attached to active orders that have not been delivered yet.")
+     * )
+     * )
+     * )
+     */
 
     //delete the product
     public function deleteProduct(Request $request, Product $product)
@@ -224,6 +295,48 @@ class ProductController extends Controller
         ], 200);
     }
 
+    /**
+     * @OA\Get(
+     * path="/api/products",
+     * summary="Fetch a list of products",
+     * description="Returns a list of products. Admins can view all products with seller details, while sellers see only their own products.",
+     * tags={"Products"},
+     * security={{"bearerAuth":{}}},
+     * @OA\Response(
+     * response=200,
+     * description="List of products retrieved successfully",
+     * @OA\JsonContent(
+     * @OA\Property(property="message", type="string", example="successfull"),
+     * @OA\Property(
+     * property="data",
+     * type="array",
+     * @OA\Items(
+     * @OA\Property(property="id", type="integer", example=1),
+     * @OA\Property(property="name", type="string", example="Wireless Mouse"),
+     * @OA\Property(property="price", type="number", format="float", example=29.99),
+     * @OA\Property(property="current_stock", type="integer", example=100),
+     * @OA\Property(property="seller_id", type="integer", example=5),
+     * @OA\Property(
+     * property="seller",
+     * type="object",
+     * description="Only returned for Admins",
+     * nullable=true,
+     * @OA\Property(property="id", type="integer", example=5),
+     * @OA\Property(property="name", type="string", example="John Doe")
+     * ),
+     * @OA\Property(property="created_at", type="string", format="date-time"),
+     * @OA\Property(property="updated_at", type="string", format="date-time")
+     * )
+     * )
+     * )
+     * ),
+     * @OA\Response(
+     * response=401,
+     * description="Unauthenticated",
+     * @OA\JsonContent(@OA\Property(property="message", type="string", example="Unauthenticated."))
+     * )
+     * )
+     */
 
     //to fetch products
     public function fetchProducts(Request $request)
