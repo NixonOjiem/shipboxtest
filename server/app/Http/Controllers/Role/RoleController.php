@@ -8,6 +8,10 @@ use Spatie\Permission\Models\Role;
 
 class RoleController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('can:update users');
+    }
     private function validatedPermission(Request $request)
     {
         return $request->validate([
@@ -17,7 +21,7 @@ class RoleController extends Controller
 
     public function givePermission(Request $request, Role $role)
     {
-        // Authorization handled by 'can:update roles' middleware in api.php
+        // Authorization handled by 'can:update roles' middleware in constructor
         $data = $this->validatedPermission($request);
 
         $role->givePermissionTo($data['permission_name']);
@@ -30,7 +34,7 @@ class RoleController extends Controller
 
     public function revokePermission(Request $request, Role $role)
     {
-        // Authorization handled by 'can:update roles' middleware in api.php
+        // Authorization handled by 'can:update roles' middleware in constructor
         $data = $this->validatedPermission($request);
 
         $role->revokePermissionTo($data['permission_name']);

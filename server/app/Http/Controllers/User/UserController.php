@@ -9,6 +9,10 @@ use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('can:update users');
+    }
     //validation
     private function validateRole(Request $request)
     {

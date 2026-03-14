@@ -23,17 +23,19 @@ Route::post('/signup', [AuthenticationController::class, 'signup']);
 Route::middleware(['auth:sanctum'])->group(function () {
     // logout route
     Route::post('/logout', [AuthenticationController::class, 'logout']);
-    // Products routes
-    Route::post('/product-post', [ProductController::class, 'createProduct'])->middleware('can:create products');
-    Route::patch('/products/{product}', [ProductController::class, 'updateProductDetails'])->middleware('can:update products');
-    Route::delete('/products/{product}/delete', [ProductController::class, 'deleteProduct'])->middleware('can:delete products');
-    Route::get('/products', [ProductController::class, 'fetchProducts'])->middleware('can:read products');
-    Route::patch('/products/{product}/adjust', [StockController::class, 'adjust'])->middleware('can:update products');
-    //order routes
-    Route::post('/order-post', [OrderController::class, 'createOrder'])->middleware('can:create orders');
-    Route::get('/order-fetch', [OrderController::class, 'fetchOrders'])->middleware('can:read orders');
-    Route::patch('/orders/{order}/update', [OrderController::class, 'updateOrder'])->middleware('can:update orders');
-    Route::delete('/orders/{order}/delete', [OrderController::class, 'deleteOrder'])->middleware('can:delete orders');
+
+    // Products routes --midleware moved inside the controller waiting test
+    Route::post('/product-post', [ProductController::class, 'createProduct']);
+    Route::patch('/products/{product}', [ProductController::class, 'updateProductDetails']);
+    Route::delete('/products/{product}/delete', [ProductController::class, 'deleteProduct']);
+    Route::get('/products', [ProductController::class, 'fetchProducts']);
+    Route::patch('/products/{product}/adjust', [StockController::class, 'adjust']);
+
+    //order routes --middleware moved to controller awaiting testing
+    Route::post('/order-post', [OrderController::class, 'createOrder']);
+    Route::get('/order-fetch', [OrderController::class, 'fetchOrders']);
+    Route::patch('/orders/{order}/update', [OrderController::class, 'updateOrder']);
+    Route::delete('/orders/{order}/delete', [OrderController::class, 'deleteOrder']);
 
     // Route to assign and revoke roles || Routes to manage permissions on roles
     Route::middleware('can:update users')->group(function () {
