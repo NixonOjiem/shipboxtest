@@ -8,6 +8,7 @@ use Spatie\Permission\Models\Role;
 
 class RoleController extends Controller
 {
+    //handle middleware for the methods
     public function __construct()
     {
         $this->middleware('can:update users');

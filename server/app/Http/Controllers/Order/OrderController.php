@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Gate;
 
 class OrderController extends Controller
 {
+    //handle middleware for the methods
     public function __construct()
     {
         $this->middleware('can:create orders')->only('createOrder');

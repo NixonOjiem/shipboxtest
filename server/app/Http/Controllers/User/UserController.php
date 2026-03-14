@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
+    //handle middleware for the methods
     public function __construct()
     {
         $this->middleware('can:update users');
