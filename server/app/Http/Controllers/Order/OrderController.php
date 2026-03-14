@@ -26,7 +26,7 @@ class OrderController extends Controller
      * @OA\Post(
      * path="/api/order-post",
      * summary="Create a new order",
-     * description="Creates an order for the authenticated user or for a specific user if the requester is an admin. Validates that all products belong to the order owner.",
+     * description="Creates an order for the authenticated seller or for a specific seller if the requester is an admin. Validates that all products belong to the target seller.",
      * tags={"Orders"},
      * security={{"bearerAuth":{}}},
      * @OA\RequestBody(
@@ -36,8 +36,8 @@ class OrderController extends Controller
      * @OA\Property(property="customer_phone", type="string", example="0123456789", description="Max 20 characters"),
      * @OA\Property(property="customer_address", type="string", example="123 Main St, City"),
      * @OA\Property(property="note", type="string", nullable=true, example="Please deliver after 5 PM"),
-     * @OA\Property(property="total_price", type="number", format="float", example=150.50, description="Cumulative price of all products"),
-     * @OA\Property(property="user_id", type="integer", example=5, description="Required only if requester is an admin. Specifies the owner of the order."),
+     * @OA\Property(property="total_price", type="number", format="float", example=150.50, minimum=1, description="Cumulative price of all products"),
+     * @OA\Property(property="seller_id", type="integer", example=5, description="Required only if requester is an admin. Specifies the owner of the products and order."),
      * @OA\Property(
      * property="products",
      * type="array",
@@ -58,12 +58,13 @@ class OrderController extends Controller
      * @OA\Property(property="order", type="object",
      * @OA\Property(property="id", type="integer", example=1),
      * @OA\Property(property="order_id", type="string", example="ORD-ABC12345"),
-     * @OA\Property(property="user_id", type="integer", example=5),
+     * @OA\Property(property="seller_id", type="integer", example=5),
      * @OA\Property(property="customer_phone", type="string", example="0123456789"),
      * @OA\Property(property="customer_address", type="string", example="123 Main St, City"),
      * @OA\Property(property="status", type="string", example="to prepare"),
+     * @OA\Property(property="note", type="string", nullable=true, example="Please deliver after 5 PM"),
      * @OA\Property(property="total_price", type="number", format="float", example=150.50),
-     * @OA\Property(property="quantity", type="integer", example=2, description="Total quantity of all items"),
+     * @OA\Property(property="quantity", type="integer", example=2, description="Total cumulative quantity of all items"),
      * @OA\Property(property="products", type="array",
      * @OA\Items(
      * type="object",
@@ -80,7 +81,7 @@ class OrderController extends Controller
      * ),
      * @OA\Response(
      * response=403,
-     * description="Forbidden - Attempting to order products not owned by the target user",
+     * description="Forbidden - Attempting to order products not owned by the target seller",
      * @OA\JsonContent(
      * @OA\Property(property="message", type="string", example="Forbidden. You can only create orders for products you own.")
      * )
@@ -213,7 +214,7 @@ class OrderController extends Controller
      * @OA\Get(
      * path="/api/order-fetch",
      * summary="Fetch a list of orders",
-     * description="Returns a paginated list of orders. Admins can view all orders, while regular users see only their own.",
+     * description="Returns a paginated list of orders. Admins can view all orders across the system, while regular sellers see only their own orders.",
      * tags={"Orders"},
      * security={{"bearerAuth":{}}},
      * @OA\Parameter(
@@ -232,21 +233,39 @@ class OrderController extends Controller
      * @OA\Items(
      * @OA\Property(property="id", type="integer", example=1),
      * @OA\Property(property="order_id", type="string", example="ORD-XYZ123"),
-     * @OA\Property(property="user_id", type="integer", example=5),
+     * @OA\Property(property="seller_id", type="integer", example=5),
      * @OA\Property(property="customer_phone", type="string", example="0123456789"),
+     * @OA\Property(property="customer_address", type="string", example="123 Main St, City"),
      * @OA\Property(property="total_price", type="number", format="float", example=250.00),
      * @OA\Property(property="status", type="string", example="to prepare"),
-     * @OA\Property(property="seller", type="object", description="The user who owns the order"),
-     * @OA\Property(property="products", type="array", @OA\Items(type="object"), description="List of products in the order"),
+     * @OA\Property(property="note", type="string", nullable=true, example="Please deliver after 5 PM"),
+     * @OA\Property(property="quantity", type="integer", example=3),
+     * @OA\Property(property="seller", type="object",
+     * @OA\Property(property="id", type="integer", example=5),
+     * @OA\Property(property="name", type="string", example="John Doe"),
+     * @OA\Property(property="email", type="string", example="seller@example.com")
+     * ),
+     * @OA\Property(property="products", type="array",
+     * @OA\Items(
+     * type="object",
+     * @OA\Property(property="id", type="integer", example=101),
+     * @OA\Property(property="name", type="string", example="Product Name"),
+     * @OA\Property(property="pivot", type="object",
+     * @OA\Property(property="order_id", type="integer", example=1),
+     * @OA\Property(property="product_id", type="integer", example=101),
+     * @OA\Property(property="quantity", type="integer", example=2)
+     * )
+     * )
+     * ),
      * @OA\Property(property="created_at", type="string", format="date-time"),
      * @OA\Property(property="updated_at", type="string", format="date-time")
      * )
      * ),
-     * @OA\Property(property="first_page_url", type="string", example="http://api.test/orders?page=1"),
+     * @OA\Property(property="first_page_url", type="string", example="http://api.test/api/order-fetch?page=1"),
      * @OA\Property(property="last_page", type="integer", example=10),
-     * @OA\Property(property="last_page_url", type="string", example="http://api.test/orders?page=10"),
-     * @OA\Property(property="next_page_url", type="string", nullable=true, example="http://api.test/orders?page=2"),
-     * @OA\Property(property="path", type="string", example="http://api.test/orders"),
+     * @OA\Property(property="last_page_url", type="string", example="http://api.test/api/order-fetch?page=10"),
+     * @OA\Property(property="next_page_url", type="string", nullable=true, example="http://api.test/api/order-fetch?page=2"),
+     * @OA\Property(property="path", type="string", example="http://api.test/api/order-fetch"),
      * @OA\Property(property="per_page", type="integer", example=15),
      * @OA\Property(property="prev_page_url", type="string", nullable=true, example=null),
      * @OA\Property(property="to", type="integer", example=15),
@@ -280,13 +299,13 @@ class OrderController extends Controller
      * @OA\Put(
      * path="/api/orders/{order}/update",
      * summary="Update an existing order",
-     * description="Allows a seller to update their own order or an Admin to update any order. Triggers OrderObserver on status change.",
+     * description="Allows a seller to update their own order or an Admin to update any order. Note: Updating the status property will trigger the OrderObserver logic.",
      * tags={"Orders"},
      * security={{"bearerAuth":{}}},
      * @OA\Parameter(
-     * name="id",
+     * name="order",
      * in="path",
-     * description="ID of the order to update",
+     * description="The ID of the order record",
      * required=true,
      * @OA\Schema(type="integer", example=123)
      * ),
@@ -297,7 +316,8 @@ class OrderController extends Controller
      * property="status",
      * type="string",
      * enum={"onhold", "returned", "delivered", "refunded", "outofstock", "cancelled", "shipped", "to prepare"},
-     * example="shipped"
+     * example="shipped",
+     * description="The new status of the order. Triggers business logic in the Observer."
      * ),
      * @OA\Property(property="note", type="string", nullable=true, example="Customer requested delivery to back door.")
      * )
@@ -309,7 +329,10 @@ class OrderController extends Controller
      * @OA\Property(property="message", type="string", example="Order updated successfully"),
      * @OA\Property(property="order", type="object",
      * @OA\Property(property="id", type="integer", example=123),
+     * @OA\Property(property="order_id", type="string", example="ORD-ABC12345"),
+     * @OA\Property(property="seller_id", type="integer", example=5),
      * @OA\Property(property="status", type="string", example="shipped"),
+     * @OA\Property(property="note", type="string", nullable=true, example="Customer requested delivery to back door."),
      * @OA\Property(property="products", type="array", @OA\Items(type="object"))
      * )
      * )
@@ -339,13 +362,12 @@ class OrderController extends Controller
      * )
      */
 
-
     // Update order (Handles status changes that trigger the Observer)
     public function updateOrder(Request $request, Order $order)
     {
         //sellers update their own orders and admin updates all
         // update to product policy or use cutom middleware
-        if (auth()->id() !== $order->seller_id && !auth()->user()->hasRole('Admin')) {
+        if (auth()->id() !== $order->seller_id && !auth()->user()->hasRole('admin')) {
             return response()->json(['message' => 'Unauthorized to update this order.'], 403);
         }
 

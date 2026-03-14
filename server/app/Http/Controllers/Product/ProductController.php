@@ -91,7 +91,7 @@ class ProductController extends Controller
 
         // If an admin, FORCE them to provide a valid user_id
         if ($isAdmin) {
-            $rules['user_id'] = 'required|exists:users,id'; //seller_id change
+            $rules['seller_id'] = 'required|exists:users,id'; //seller_id change
         }
 
         $validated = $request->validate($rules);
@@ -99,17 +99,17 @@ class ProductController extends Controller
         // Determine user model to attach the product to
         if ($isAdmin) {
             // Fetch the selected user
-            $targetUser = User::findOrFail($validated['user_id']);
+            $targetSeller = User::findOrFail($validated['seller_id']);
 
             //prevent Mass Assignment Exceptions. relationship handles it
-            unset($validated['user_id']);
+            unset($validated['seller_id']);
         } else {
             // Regular users create products for themselves
-            $targetUser = $currentUser;
+            $targetSeller = $currentUser;
         }
 
         // Attach the product to the resolved target user
-        $product = $targetUser->products()->create($validated);
+        $product = $targetSeller->products()->create($validated);
 
         return response()->json([
             'message' => 'Product created successfully',
@@ -174,7 +174,7 @@ class ProductController extends Controller
     {
         //check if user is admin or owns the product
         // update to product policy or use cutom middleware
-        if ($product->user_id !== $request->user()->id && !$request->user()->hasRole('admin')) {
+        if ($product->seller_id !== $request->user()->id && !$request->user()->hasRole('admin')) {
             return response()->json([
                 'message' => 'Unauthorized. You can only modify your own products.'
             ], 403);
@@ -200,7 +200,8 @@ class ProductController extends Controller
     {
         // check if user owns the product or is admin
         // update to product policy or use cutom middleware
-        if ($product->user_id !== $request->user()->id && !$request->user()->hasRole('admin')) {
+
+        if ($product->seller_id !== auth()->id() && !auth()->user()->hasRole('admin')) {
             return response()->json([
                 'message' => 'Unauthorized. You can only delete your own products.'
             ], 403);
@@ -233,7 +234,7 @@ class ProductController extends Controller
         //check if admin
         // update to product policy or use cutom middleware
         if ($authUser->hasRole('admin')) {
-            $products = Product::with('user')->get(); //pargination 15
+            $products = Product::with('seller')->get(); //pargination 15
             return response()->json(['message' => 'successfull', 'data' => $products]);
         }
 
